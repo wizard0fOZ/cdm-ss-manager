@@ -44,7 +44,7 @@ final class ClassesController
         return;
       }
       $in = implode(',', array_fill(0, count($ids), '?'));
-      $stmt = $pdo->prepare(\"UPDATE classes SET status=? WHERE id IN ($in)\");
+      $stmt = $pdo->prepare("UPDATE classes SET status=? WHERE id IN ($in)");
       $stmt->execute(array_merge([$status], $ids));
       (new Response())->redirect('/classes');
       return;
@@ -57,7 +57,7 @@ final class ClassesController
         return;
       }
       $in = implode(',', array_fill(0, count($ids), '?'));
-      $stmt = $pdo->prepare(\"UPDATE classes SET session_id=? WHERE id IN ($in)\");
+      $stmt = $pdo->prepare("UPDATE classes SET session_id=? WHERE id IN ($in)");
       $stmt->execute(array_merge([$sessionId], $ids));
       (new Response())->redirect('/classes');
       return;
@@ -70,7 +70,7 @@ final class ClassesController
         return;
       }
       $in = implode(',', array_fill(0, count($ids), '?'));
-      $stmt = $pdo->prepare(\"UPDATE classes SET academic_year_id=? WHERE id IN ($in)\");
+      $stmt = $pdo->prepare("UPDATE classes SET academic_year_id=? WHERE id IN ($in)");
       $stmt->execute(array_merge([$academicYearId], $ids));
       (new Response())->redirect('/classes');
       return;

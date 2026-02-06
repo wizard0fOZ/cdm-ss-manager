@@ -88,7 +88,7 @@ final class StudentsController
       }
 
       $in = implode(',', array_fill(0, count($ids), '?'));
-      $stmt = $pdo->prepare(\"UPDATE students SET status=? WHERE id IN ($in)\");
+      $stmt = $pdo->prepare("UPDATE students SET status=? WHERE id IN ($in)");
       $stmt->execute(array_merge([$status], $ids));
       (new Response())->redirect('/students');
       return;
@@ -112,7 +112,7 @@ final class StudentsController
       $pdo->beginTransaction();
       try {
         $in = implode(',', array_fill(0, count($ids), '?'));
-        $pdo->prepare(\"UPDATE student_class_enrollments SET end_date = ? WHERE student_id IN ($in) AND end_date IS NULL\")
+        $pdo->prepare("UPDATE student_class_enrollments SET end_date = ? WHERE student_id IN ($in) AND end_date IS NULL")
           ->execute(array_merge([date('Y-m-d')], $ids));
 
         $insert = $pdo->prepare('INSERT INTO student_class_enrollments (student_id, class_id, academic_year_id, start_date) VALUES (?,?,?,?)');

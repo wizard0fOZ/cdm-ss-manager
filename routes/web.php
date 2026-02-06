@@ -25,3 +25,4 @@ $router->get('/dashboard', [DashboardController::class, 'index'])->middleware('a
 // modules
 require dirname(__DIR__) . '/app/Modules/Students/routes.php';
 require dirname(__DIR__) . '/app/Modules/Academic/routes.php';
+require dirname(__DIR__) . '/app/Modules/Attendance/routes.php';

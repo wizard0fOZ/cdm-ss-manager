@@ -1,5 +1,6 @@
 <?php
-  $flash = $flash ?? ($_SESSION['flash'] ?? null);
+  use App\Core\Support\Flash;
+  $flash = $flash ?? Flash::get();
   if (!empty($flash) && is_array($flash)):
     $type = $flash['type'] ?? 'info';
     $message = $flash['message'] ?? '';
@@ -11,7 +12,14 @@
     ];
     $colorClass = $colors[$type] ?? $colors['info'];
 ?>
-  <div class="mx-6 mt-6 rounded-xl border px-4 py-3 text-sm <?= $colorClass ?>">
+  <div class="mx-6 mt-6 rounded-xl border px-4 py-3 text-sm <?= $colorClass ?>" data-toast>
     <?= htmlspecialchars($message) ?>
   </div>
+  <script>
+    (function () {
+      const toast = document.querySelector('[data-toast]');
+      if (!toast) return;
+      setTimeout(() => { toast.remove(); }, 3000);
+    })();
+  </script>
 <?php endif; ?>

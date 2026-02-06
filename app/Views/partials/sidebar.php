@@ -8,7 +8,7 @@
     ['label' => 'Terms', 'icon' => 'M6 4h12v4H6zm0 6h12v10H6z', 'href' => '/terms', 'enabled' => true],
     ['label' => 'Sessions', 'icon' => 'M5 4h14v3H5zm0 5h14v3H5zm0 5h14v3H5z', 'href' => '/sessions', 'enabled' => true],
     ['label' => 'Classes', 'icon' => 'M5 4h14v3H5zm0 5h14v3H5zm0 5h14v3H5z', 'href' => '/classes', 'enabled' => true],
-    ['label' => 'Attendance', 'icon' => 'M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 5h6v2H9V8Zm0 4h6v2H9v-2Z', 'href' => '/attendance', 'enabled' => false],
+    ['label' => 'Attendance', 'icon' => 'M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 5h6v2H9V8Zm0 4h6v2H9v-2Z', 'href' => '/attendance', 'enabled' => true],
     ['label' => 'Lessons', 'icon' => 'M4 5h7v14H4V5Zm9 0h7v10h-7V5Zm0 12h7v2h-7v-2Z', 'href' => '/lessons', 'enabled' => false],
     ['label' => 'Faith Book', 'icon' => 'M5 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm1 4h8v2H6V8Zm0 4h8v2H6v-2Z', 'href' => '/faith-book', 'enabled' => false],
     ['label' => 'Training', 'icon' => 'M4 6h16v2H4V6Zm2 4h12l-6 6-6-6Z', 'href' => '/training', 'enabled' => false],
