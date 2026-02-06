@@ -12,7 +12,8 @@
     ['label' => 'Lessons', 'icon' => 'M4 5h7v14H4V5Zm9 0h7v10h-7V5Zm0 12h7v2h-7v-2Z', 'href' => '/lessons', 'enabled' => true],
     ['label' => 'Faith Book', 'icon' => 'M5 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm1 4h8v2H6V8Zm0 4h8v2H6v-2Z', 'href' => '/faith-book', 'enabled' => true],
     ['label' => 'Training', 'icon' => 'M4 6h16v2H4V6Zm2 4h12l-6 6-6-6Z', 'href' => '/training', 'enabled' => true],
-    ['label' => 'Announcements', 'icon' => 'M4 12h16M7 6h10M7 18h10', 'href' => '/announcements', 'enabled' => false],
+    ['label' => 'Announcements', 'icon' => 'M4 12h16M7 6h10M7 18h10', 'href' => '/announcements', 'enabled' => true],
+    ['label' => 'Calendar', 'icon' => 'M6 4h12v3H6zm-2 5h16v11H4z', 'href' => '/calendar', 'enabled' => true],
     ['label' => 'Reports', 'icon' => 'M4 4h6v16H4V4Zm10 6h6v10h-6V10Z', 'href' => '/reports', 'enabled' => false],
     ['label' => 'Imports', 'icon' => 'M12 3v10m0 0 4-4m-4 4-4-4M5 17h14v4H5v-4Z', 'href' => '/imports', 'enabled' => false],
     ['label' => 'Admin', 'icon' => 'M12 4a4 4 0 1 0 0.001 7.999A4 4 0 0 0 12 4Zm-7 14a7 7 0 0 1 14 0v2H5v-2Z', 'href' => '/admin', 'enabled' => false],
@@ -60,7 +61,7 @@
     </div>
 
     <div class="border-t border-slate-200 px-5 py-4 text-xs text-slate-500">
-      Version 0.2 • Phase 2
+      Version 0.2 • Phase 9
     </div>
   </div>
 </aside>

@@ -39,5 +39,6 @@
 
   <script src="/assets/choices.min.js"></script>
   <script src="/assets/app.js"></script>
+  <?= $pageScripts ?? '' ?>
 </body>
 </html>

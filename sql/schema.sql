@@ -531,8 +531,8 @@ CREATE TABLE `students` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-DROP TABLE IF EXISTS `system_announcements`;
-CREATE TABLE `system_announcements` (
+DROP TABLE IF EXISTS `announcements`;
+CREATE TABLE `announcements` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(180) NOT NULL,
   `message` text NOT NULL,
@@ -540,6 +540,11 @@ CREATE TABLE `system_announcements` (
   `class_id` bigint unsigned DEFAULT NULL,
   `start_at` datetime NOT NULL,
   `end_at` datetime NOT NULL,
+  `status` enum('DRAFT','PUBLISHED') NOT NULL DEFAULT 'DRAFT',
+  `published_at` datetime DEFAULT NULL,
+  `pin_until` datetime DEFAULT NULL,
+  `is_pinned` tinyint(1) NOT NULL DEFAULT '0',
+  `priority` tinyint unsigned NOT NULL DEFAULT '0',
   `version` int unsigned NOT NULL DEFAULT '1',
   `created_by` bigint unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -549,8 +554,8 @@ CREATE TABLE `system_announcements` (
   KEY `idx_sa_scope_class` (`scope`,`class_id`),
   KEY `fk_sa_class` (`class_id`),
   KEY `fk_sa_created_by` (`created_by`),
-  CONSTRAINT `fk_sa_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_sa_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
+  CONSTRAINT `fk_announcements_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_announcements_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

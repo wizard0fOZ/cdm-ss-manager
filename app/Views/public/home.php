@@ -122,6 +122,44 @@ $mailto = 'mailto:' . $contactEmail;
     </div>
   </section>
 
+  <?php if (!empty($announcements)): ?>
+    <section id="announcements" class="fade-in">
+      <div class="mx-auto max-w-6xl px-4 pb-14">
+        <div class="text-center">
+          <h2 class="text-2xl font-extrabold md:text-3xl">Announcements</h2>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Latest updates for families and students.
+          </p>
+        </div>
+
+        <div class="mt-8 grid gap-4 md:grid-cols-2">
+          <?php foreach ($announcements as $announcement): ?>
+            <?php
+              $start = new DateTime($announcement['start_at']);
+              $end = new DateTime($announcement['end_at']);
+              $pinUntil = !empty($announcement['pin_until']) ? new DateTime($announcement['pin_until']) : null;
+              $isPinned = !empty($announcement['is_pinned']) && (!$pinUntil || $pinUntil >= new DateTime('now'));
+            ?>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/60">
+              <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <?= htmlspecialchars($start->format('d M Y')) ?> – <?= htmlspecialchars($end->format('d M Y')) ?>
+              </div>
+              <div class="mt-2 flex flex-wrap items-center gap-2 text-lg font-semibold">
+                <span><?= htmlspecialchars($announcement['title']) ?></span>
+                <?php if ($isPinned): ?>
+                  <span class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">Pinned</span>
+                <?php endif; ?>
+              </div>
+              <p class="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                <?= nl2br(htmlspecialchars($announcement['message'])) ?>
+              </p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </section>
+  <?php endif; ?>
+
   <!-- Org Chart -->
   <section id="org" class="fade-in">
     <div class="mx-auto max-w-6xl px-4 pb-14">
