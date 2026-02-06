@@ -48,6 +48,7 @@
           <tr>
             <th class="px-4 py-3">Class</th>
             <th class="px-4 py-3">Session</th>
+            <th class="px-4 py-3">Teachers</th>
             <th class="px-4 py-3">Year</th>
             <th class="px-4 py-3">Status</th>
             <th class="px-4 py-3">Actions</th>
@@ -56,7 +57,7 @@
         <tbody>
           <?php if (empty($classes)): ?>
             <tr>
-              <td colspan="5" class="px-4 py-6">
+              <td colspan="6" class="px-4 py-6">
                 <?php $message = 'No classes available for attendance.'; ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
@@ -73,6 +74,21 @@
               <tr class="border-t border-slate-200">
                 <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($cleanLabel($class['name'])) ?></td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['session_name'] ?? '—') ?></td>
+                <td class="px-4 py-3 text-slate-600">
+                  <?php
+                    $rows = $classTeachers[$class['id']] ?? [];
+                    if (!$rows) {
+                      echo '—';
+                    } else {
+                      $labels = [];
+                      foreach ($rows as $row) {
+                        $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                        $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+                      }
+                      echo implode(', ', $labels);
+                    }
+                  ?>
+                </td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['academic_year_label'] ?? '—') ?></td>
                 <td class="px-4 py-3">
                   <?php if (!empty($class['is_locked_display'])): ?>

@@ -23,7 +23,20 @@
         <dl class="mt-3 space-y-2 text-sm">
           <div class="flex justify-between"><dt class="text-slate-500">DOB</dt><dd><?= htmlspecialchars($student['dob_display'] ?? $student['dob'] ?? '—') ?></dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">Age</dt><dd><?= htmlspecialchars(($student['age_display'] ?? null) !== null ? (string)$student['age_display'] : '—') ?></dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">Class</dt><dd><?= htmlspecialchars($student['class_name'] ?? '—') ?></dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">Class</dt><dd><?= htmlspecialchars($student['class_name'] ?? '—') ?></dd></div>
+        <?php if (!empty($teachers)): ?>
+          <div class="flex justify-between"><dt class="text-slate-500">Teachers</dt><dd>
+            <?php
+              $labels = [];
+              foreach ($teachers as $row) {
+                $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+              }
+              echo implode(', ', $labels);
+            ?>
+          </dd></div>
+        <?php endif; ?>
+          <div class="flex justify-between"><dt class="text-slate-500">Admission</dt><dd><?= htmlspecialchars($student['admission_type'] ?? '—') ?></dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">RCIC</dt><dd><?= !empty($student['is_rcic']) ? 'Yes' : 'No' ?></dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">Status</dt><dd><?= htmlspecialchars($student['status'] ?? '—') ?></dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">Identity No.</dt><dd><?= htmlspecialchars($student['identity_number'] ?? '—') ?></dd></div>
@@ -93,6 +106,48 @@
         <div>
           <div class="text-slate-500">Place of Confirmation</div>
           <div><?= htmlspecialchars($sacrament['place_of_confirmation'] ?? '—') ?></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 p-4">
+      <div class="text-xs uppercase tracking-wide text-slate-500">Documents</div>
+      <div class="mt-3 grid gap-2 text-sm md:grid-cols-2">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Birth certificate</span>
+          <?php if (!empty($student['doc_birth_cert_url'])): ?>
+            <a class="text-xs text-slate-700 underline" href="<?= htmlspecialchars($student['doc_birth_cert_url']) ?>" target="_blank" rel="noreferrer">View link</a>
+            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Received</span>
+          <?php else: ?>
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Missing</span>
+          <?php endif; ?>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Baptism certificate</span>
+          <?php if (!empty($student['doc_baptism_cert_url'])): ?>
+            <a class="text-xs text-slate-700 underline" href="<?= htmlspecialchars($student['doc_baptism_cert_url']) ?>" target="_blank" rel="noreferrer">View link</a>
+            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Received</span>
+          <?php else: ?>
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Missing</span>
+          <?php endif; ?>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Transfer letter</span>
+          <?php if (!empty($student['doc_transfer_letter_url'])): ?>
+            <a class="text-xs text-slate-700 underline" href="<?= htmlspecialchars($student['doc_transfer_letter_url']) ?>" target="_blank" rel="noreferrer">View link</a>
+            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Received</span>
+          <?php else: ?>
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Missing</span>
+          <?php endif; ?>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">FHC certificate</span>
+          <?php if (!empty($student['doc_fhc_cert_url'])): ?>
+            <a class="text-xs text-slate-700 underline" href="<?= htmlspecialchars($student['doc_fhc_cert_url']) ?>" target="_blank" rel="noreferrer">View link</a>
+            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">Received</span>
+          <?php else: ?>
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Optional</span>
+          <?php endif; ?>
         </div>
       </div>
     </div>

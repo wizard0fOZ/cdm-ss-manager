@@ -20,7 +20,7 @@ final class FaithBookController
 
     $pdo = Db::pdo();
     $params = [];
-    $sql = "SELECT s.id, s.full_name, s.status, c.name AS class_name
+    $sql = "SELECT s.id, s.full_name, s.status, c.name AS class_name, sce.class_id AS class_id
             FROM students s
             LEFT JOIN student_class_enrollments sce ON sce.student_id = s.id AND sce.end_date IS NULL
             LEFT JOIN classes c ON c.id = sce.class_id";
@@ -41,9 +41,18 @@ final class FaithBookController
     $stmt->execute($params);
     $students = $stmt->fetchAll();
 
+    $classIds = [];
+    foreach ($students as $student) {
+      if (!empty($student['class_id'])) {
+        $classIds[] = (int)$student['class_id'];
+      }
+    }
+    $classTeachers = $this->getClassTeachers($pdo, array_values(array_unique($classIds)));
+
     (new Response())->view('faith_book/index.php', [
       'students' => $students,
       'q' => $q,
+      'classTeachers' => $classTeachers,
     ]);
   }
 
@@ -68,12 +77,18 @@ final class FaithBookController
 
     $entries = $this->getEntries($pdo, $studentId);
     $attendance = $this->getAttendanceSummary($pdo, $studentId);
+    $teachers = [];
+    if (!empty($student['class_id'])) {
+      $teachers = $this->getClassTeachers($pdo, [(int)$student['class_id']]);
+      $teachers = $teachers[(int)$student['class_id']] ?? [];
+    }
 
     (new Response())->view('faith_book/show.php', [
       'student' => $student,
       'entries' => $entries,
       'types' => $this->types,
       'attendance' => $attendance,
+      'teachers' => $teachers,
     ]);
   }
 
@@ -255,7 +270,7 @@ final class FaithBookController
 
   private function getStudent(\PDO $pdo, int $studentId): ?array
   {
-    $stmt = $pdo->prepare('SELECT s.*, c.name AS class_name FROM students s LEFT JOIN student_class_enrollments sce ON sce.student_id = s.id AND sce.end_date IS NULL LEFT JOIN classes c ON c.id = sce.class_id WHERE s.id = ?');
+    $stmt = $pdo->prepare('SELECT s.*, c.name AS class_name, sce.class_id FROM students s LEFT JOIN student_class_enrollments sce ON sce.student_id = s.id AND sce.end_date IS NULL LEFT JOIN classes c ON c.id = sce.class_id WHERE s.id = ?');
     $stmt->execute([$studentId]);
     return $stmt->fetch() ?: null;
   }
@@ -294,6 +309,24 @@ final class FaithBookController
     return $summary;
   }
 
+  private function getClassTeachers(\PDO $pdo, array $classIds): array
+  {
+    $ids = array_filter(array_map('intval', $classIds));
+    if (!$ids) return [];
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare("SELECT cta.class_id, cta.assignment_role, u.full_name
+      FROM class_teacher_assignments cta
+      JOIN users u ON u.id = cta.user_id
+      WHERE cta.class_id IN ($placeholders) AND (cta.end_date IS NULL OR cta.end_date >= CURDATE())
+      ORDER BY FIELD(cta.assignment_role, 'MAIN', 'ASSISTANT'), u.full_name ASC");
+    $stmt->execute($ids);
+    $map = [];
+    foreach ($stmt->fetchAll() as $row) {
+      $map[$row['class_id']][] = $row;
+    }
+    return $map;
+  }
+
   private function canAccessStudent(\PDO $pdo, int $userId, int $studentId): bool
   {
     $stmt = $pdo->prepare('SELECT 1 FROM student_class_enrollments sce JOIN class_teacher_assignments cta ON cta.class_id = sce.class_id WHERE sce.student_id = ? AND cta.user_id = ? AND sce.end_date IS NULL AND (cta.end_date IS NULL OR cta.end_date >= CURDATE()) LIMIT 1');
@@ -304,6 +337,10 @@ final class FaithBookController
   private function isStaffAdmin(int $userId): bool
   {
     if ($userId <= 0) return false;
+    $override = $_SESSION['_role_override_code'] ?? null;
+    if ($override) {
+      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
+    }
     $pdo = Db::pdo();
     $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
     $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);

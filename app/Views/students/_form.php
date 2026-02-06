@@ -15,6 +15,11 @@
   $address = $student['address'] ?? '';
   $notes = $student['notes'] ?? '';
   $selectedClassId = $student['class_id'] ?? '';
+  $admissionType = $student['admission_type'] ?? 'NEW';
+  $docBirthUrl = $student['doc_birth_cert_url'] ?? '';
+  $docBaptismUrl = $student['doc_baptism_cert_url'] ?? '';
+  $docTransferUrl = $student['doc_transfer_letter_url'] ?? '';
+  $docFhcUrl = $student['doc_fhc_cert_url'] ?? '';
 
   $sacrament = $sacrament ?? [];
 
@@ -83,6 +88,15 @@
           <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>><?= $opt ?></option>
         <?php endforeach; ?>
       </select>
+    </div>
+    <div>
+      <label class="text-sm text-slate-600">Admission Type</label>
+      <select name="admission_type" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-admission-type>
+        <?php foreach (['NEW','TRANSFER'] as $opt): ?>
+          <option value="<?= $opt ?>" <?= $admissionType === $opt ? 'selected' : '' ?>><?= $opt ?></option>
+        <?php endforeach; ?>
+      </select>
+      <p class="mt-1 text-xs text-slate-400" data-admission-hint></p>
     </div>
   </section>
 
@@ -238,6 +252,28 @@
     </div>
   </section>
 
+  <section class="space-y-3">
+    <div class="text-sm font-semibold text-slate-900">Required Documents</div>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <label class="text-sm text-slate-600">Birth certificate link</label>
+        <input name="doc_birth_cert_url" value="<?= htmlspecialchars($docBirthUrl) ?>" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">Baptism certificate link</label>
+        <input name="doc_baptism_cert_url" value="<?= htmlspecialchars($docBaptismUrl) ?>" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">Transfer letter link</label>
+        <input name="doc_transfer_letter_url" value="<?= htmlspecialchars($docTransferUrl) ?>" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">FHC certificate link (optional)</label>
+        <input name="doc_fhc_cert_url" value="<?= htmlspecialchars($docFhcUrl) ?>" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      </div>
+    </div>
+  </section>
+
   <section class="grid gap-4 md:grid-cols-2">
     <div>
       <label class="text-sm text-slate-600">Remarks</label>
@@ -289,13 +325,15 @@
   </div>
 </template>
 
-<script>
+  <script>
   (function () {
     const addBtn = document.querySelector('[data-add-guardian]');
     const list = document.getElementById('guardian-list');
     const template = document.getElementById('guardian-template');
     const rcicToggle = document.querySelector('[data-rcic-toggle]');
     const sacramentFields = document.querySelectorAll('[data-sacrament-field]');
+    const admissionSelect = document.querySelector('[data-admission-type]');
+    const admissionHint = document.querySelector('[data-admission-hint]');
 
     if (!addBtn || !list || !template) return;
 
@@ -327,6 +365,19 @@
     if (rcicToggle) {
       setSacramentVisibility(rcicToggle.checked);
       rcicToggle.addEventListener('change', () => setSacramentVisibility(rcicToggle.checked));
+    }
+
+    function setAdmissionHint() {
+      if (!admissionSelect || !admissionHint) return;
+      if (admissionSelect.value === 'TRANSFER') {
+        admissionHint.textContent = 'Transfer: birth + baptism + transfer letter; FHC optional.';
+      } else {
+        admissionHint.textContent = 'New: birth + baptism certificates.';
+      }
+    }
+    if (admissionSelect) {
+      setAdmissionHint();
+      admissionSelect.addEventListener('change', setAdmissionHint);
     }
 
     document.querySelectorAll('[data-remove-guardian]').forEach((btn) => {

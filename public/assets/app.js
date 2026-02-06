@@ -113,10 +113,12 @@
         body.innerHTML = items.map((event) => {
           const time = event.all_day ? 'All day' : `${event.start_time} - ${event.end_time}`;
           const scope = event.scope === 'CLASS' ? `Class • ${event.class_name || 'Unknown'}` : 'Global';
+          const teachers = event.teachers ? `<div class=\"mt-1 text-xs text-slate-500\">${event.teachers}</div>` : '';
           return `
             <div class="rounded-lg border border-slate-200 px-3 py-2">
               <div class="text-sm font-semibold text-slate-900">${event.title}</div>
               <div class="text-xs text-slate-500">${scope} • ${event.category}</div>
+              ${teachers}
               <div class="mt-1 text-xs text-slate-600">${time}</div>
             </div>
           `;

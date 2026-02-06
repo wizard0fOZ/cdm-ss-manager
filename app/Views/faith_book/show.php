@@ -9,7 +9,19 @@
       <div>
         <div class="text-xs uppercase tracking-wide text-slate-500">Student</div>
         <div class="text-lg font-semibold text-slate-900"><?= htmlspecialchars($student['full_name'] ?? '') ?></div>
-        <div class="text-xs text-slate-500">Class: <?= htmlspecialchars($student['class_name'] ?? '—') ?></div>
+  <div class="text-xs text-slate-500">Class: <?= htmlspecialchars($student['class_name'] ?? '—') ?></div>
+  <?php if (!empty($teachers)): ?>
+    <div class="mt-1 text-xs text-slate-500">
+      <?php
+        $labels = [];
+        foreach ($teachers as $row) {
+          $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+          $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+        }
+        echo implode(', ', $labels);
+      ?>
+    </div>
+  <?php endif; ?>
       </div>
       <div class="flex items-center gap-2">
         <a href="/faith-book/<?= (int)$student['id'] ?>/create" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Add Entry</a>

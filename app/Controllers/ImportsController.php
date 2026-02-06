@@ -5,6 +5,8 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
+use App\Core\Rbac\Rbac;
+use App\Core\Audit\Audit;
 
 final class ImportsController
 {
@@ -13,6 +15,7 @@ final class ImportsController
 
   public function index(): void
   {
+    if (!$this->guard('imports.view')) return;
     $pdo = Db::pdo();
     $jobs = $pdo->query('SELECT * FROM import_jobs ORDER BY created_at DESC LIMIT 50')->fetchAll();
 
@@ -23,6 +26,7 @@ final class ImportsController
 
   public function create(): void
   {
+    if (!$this->guard('imports.run')) return;
     $pdo = Db::pdo();
     $years = $pdo->query('SELECT id, label, is_active FROM academic_years ORDER BY start_date DESC')->fetchAll();
     $classes = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
@@ -38,6 +42,7 @@ final class ImportsController
 
   public function template(Request $request): void
   {
+    if (!$this->guard('imports.view')) return;
     $type = strtoupper((string)$request->param('type'));
     if (!in_array($type, $this->types, true)) {
       (new Response())->status(404)->html('Template not found');
@@ -62,6 +67,7 @@ final class ImportsController
 
   public function preview(): void
   {
+    if (!$this->guard('imports.run')) return;
     $type = strtoupper(trim($_POST['job_type'] ?? ''));
     if (!in_array($type, $this->types, true)) {
       (new Response())->status(400)->html('Invalid import type.');
@@ -70,6 +76,12 @@ final class ImportsController
 
     if (empty($_FILES['csv_file']['tmp_name'])) {
       Flash::set('error', 'CSV file is required for preview.');
+      (new Response())->redirect('/imports/create');
+      return;
+    }
+    $fileErrors = $this->validateUploadedCsv($_FILES['csv_file']);
+    if ($fileErrors) {
+      Flash::set('error', implode(' ', $fileErrors));
       (new Response())->redirect('/imports/create');
       return;
     }
@@ -82,6 +94,7 @@ final class ImportsController
     $storedPath = $this->storeFile($_FILES['csv_file'], time(), 'preview');
 
     $preview = $this->buildPreview($type, $storedPath);
+    $summary = $this->buildImportSummary($type, $storedPath, $preview['mapping']);
     $isSysAdmin = $this->isSysAdmin((int)($_SESSION['user_id'] ?? 0));
 
     (new Response())->view('imports/preview.php', [
@@ -91,6 +104,7 @@ final class ImportsController
       'mapping' => $preview['mapping'],
       'rows' => $preview['rows'],
       'rowIssues' => $preview['row_issues'],
+      'summary' => $summary,
       'isSysAdmin' => $isSysAdmin,
       'years' => $years,
       'classes' => $classes,
@@ -107,6 +121,7 @@ final class ImportsController
 
   public function store(Request $request): void
   {
+    if (!$this->guard('imports.run')) return;
     $userId = (int)($_SESSION['user_id'] ?? 0);
     $type = strtoupper(trim($_POST['job_type'] ?? ''));
     $duplicateMode = $_POST['duplicate_mode'] ?? 'update';
@@ -125,6 +140,10 @@ final class ImportsController
     if (!in_array($type, $this->types, true)) $errors[] = 'Invalid import type.';
     if (!in_array($duplicateMode, ['update','skip'], true)) $errors[] = 'Invalid duplicate handling.';
     if (empty($_FILES['csv_file']['tmp_name']) && $storedPath === '') $errors[] = 'CSV file is required.';
+    if (!empty($_FILES['csv_file']['tmp_name'])) {
+      $fileErrors = $this->validateUploadedCsv($_FILES['csv_file']);
+      if ($fileErrors) $errors = array_merge($errors, $fileErrors);
+    }
 
     if ($errors) {
       $pdo = Db::pdo();
@@ -148,7 +167,7 @@ final class ImportsController
       $storedPath = $this->sanitizeStoredPath($storedPath);
     }
 
-    if ($storedPath === '') {
+    if ($storedPath === '' || !is_file($storedPath)) {
       Flash::set('error', 'Stored file path is invalid.');
       (new Response())->redirect('/imports/create');
       return;
@@ -162,6 +181,7 @@ final class ImportsController
 
       if (!$canOverride) {
         $preview = $this->buildPreviewWithMapping($type, $storedPath, $mapping);
+        $summary = $this->buildImportSummary($type, $storedPath, $mapping);
         $years = $pdo->query('SELECT id, label, is_active FROM academic_years ORDER BY start_date DESC')->fetchAll();
         $classes = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
         $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name ASC')->fetchAll();
@@ -173,6 +193,7 @@ final class ImportsController
           'mapping' => $preview['mapping'],
           'rows' => $preview['rows'],
           'rowIssues' => $preview['row_issues'],
+          'summary' => $summary,
           'isSysAdmin' => $isSysAdmin,
           'errors' => ['Fix required fields before importing.'],
           'years' => $years,
@@ -199,6 +220,10 @@ final class ImportsController
       $dryRun ? 'Dry run' : null,
     ]);
     $jobId = (int)$pdo->lastInsertId();
+    Audit::log('imports.start', 'import_jobs', (string)$jobId, null, [
+      'type' => $type,
+      'dry_run' => $dryRun,
+    ]);
 
     $pdo->prepare('UPDATE import_jobs SET stored_file_path = ? WHERE id = ?')->execute([$storedPath, $jobId]);
 
@@ -228,6 +253,7 @@ final class ImportsController
 
   public function show(Request $request): void
   {
+    if (!$this->guard('imports.view')) return;
     $id = (int)$request->param('id');
     $pdo = Db::pdo();
     $stmt = $pdo->prepare('SELECT * FROM import_jobs WHERE id = ?');
@@ -259,6 +285,37 @@ final class ImportsController
     $target = $dir . '/' . $safe;
     move_uploaded_file($file['tmp_name'], $target);
     return $target;
+  }
+
+  private function validateUploadedCsv(array $file): array
+  {
+    $errors = [];
+    if (!empty($file['error'])) {
+      $errors[] = 'Upload failed.';
+      return $errors;
+    }
+
+    $name = $file['name'] ?? '';
+    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+    if ($ext !== 'csv') {
+      $errors[] = 'Only CSV files are allowed.';
+    }
+
+    $maxBytes = 5 * 1024 * 1024;
+    if (!empty($file['size']) && $file['size'] > $maxBytes) {
+      $errors[] = 'CSV file must be under 5MB.';
+    }
+
+    if (!empty($file['tmp_name']) && is_file($file['tmp_name'])) {
+      $finfo = new \finfo(FILEINFO_MIME_TYPE);
+      $mime = $finfo->file($file['tmp_name']);
+      $allowed = ['text/plain','text/csv','application/csv','application/vnd.ms-excel'];
+      if ($mime && !in_array($mime, $allowed, true)) {
+        $errors[] = 'CSV file type is not valid.';
+      }
+    }
+
+    return $errors;
   }
 
   private function processCsv(string $type, string $path, array $options): array
@@ -396,7 +453,7 @@ final class ImportsController
 
     if ($type === 'TEACHERS') {
       $name = trim($payload['full_name'] ?? '');
-      $email = trim($payload['email'] ?? '');
+      $email = strtolower(trim($payload['email'] ?? ''));
       if ($name === '' || $email === '') {
         return ['status' => 'FAILED', 'error' => 'Missing full_name or email.'];
       }
@@ -621,6 +678,85 @@ final class ImportsController
     ];
   }
 
+  private function buildImportSummary(string $type, string $path, array $mapping): array
+  {
+    $handle = fopen($path, 'r');
+    if (!$handle) {
+      return ['total' => 0, 'existing' => 0, 'new' => 0, 'unknown' => 0];
+    }
+
+    $header = fgetcsv($handle);
+    if (!$header) {
+      fclose($handle);
+      return ['total' => 0, 'existing' => 0, 'new' => 0, 'unknown' => 0];
+    }
+
+    $map = $this->normalizeHeaders($header);
+    $pdo = Db::pdo();
+    $existing = [];
+    $existingAlt = [];
+
+    if ($type === 'TEACHERS') {
+      $rows = $pdo->query('SELECT email FROM users')->fetchAll();
+      foreach ($rows as $row) {
+        $email = strtolower(trim((string)$row['email']));
+        if ($email !== '') $existing[$email] = true;
+      }
+    } elseif ($type === 'STUDENTS') {
+      $rows = $pdo->query('SELECT identity_number, full_name, dob FROM students')->fetchAll();
+      foreach ($rows as $row) {
+        $idn = strtolower(trim((string)$row['identity_number']));
+        if ($idn !== '') $existing[$idn] = true;
+        $name = strtolower(trim((string)$row['full_name']));
+        $dob = trim((string)$row['dob']);
+        if ($name !== '' && $dob !== '') {
+          $existingAlt[$name . '|' . $dob] = true;
+        }
+      }
+    } elseif ($type === 'CLASSES') {
+      $rows = $pdo->query('SELECT name FROM classes')->fetchAll();
+      foreach ($rows as $row) {
+        $name = strtolower(trim((string)$row['name']));
+        if ($name !== '') $existing[$name] = true;
+      }
+    }
+
+    $total = 0;
+    $existingCount = 0;
+    $newCount = 0;
+    $unknown = 0;
+    while (($row = fgetcsv($handle)) !== false) {
+      $payload = $this->mapRowWithMapping($map, $row, $mapping);
+      $total++;
+
+      if ($type === 'TEACHERS') {
+        $email = strtolower(trim((string)($payload['email'] ?? '')));
+        if ($email === '') { $unknown++; continue; }
+        if (isset($existing[$email])) $existingCount++; else $newCount++;
+      } elseif ($type === 'STUDENTS') {
+        $idn = strtolower(trim((string)($payload['identity_number'] ?? '')));
+        if ($idn !== '' && isset($existing[$idn])) { $existingCount++; continue; }
+        $full = strtolower(trim((string)(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''))));
+        $dob = $this->parseDate((string)($payload['dob'] ?? ''));
+        if ($full !== '' && $dob !== '' && isset($existingAlt[$full . '|' . $dob])) { $existingCount++; continue; }
+        if ($full === '' && $idn === '') { $unknown++; continue; }
+        $newCount++;
+      } else {
+        $name = strtolower(trim((string)($payload['name'] ?? '')));
+        if ($name === '') { $unknown++; continue; }
+        if (isset($existing[$name])) $existingCount++; else $newCount++;
+      }
+    }
+
+    fclose($handle);
+    return [
+      'total' => $total,
+      'existing' => $existingCount,
+      'new' => $newCount,
+      'unknown' => $unknown,
+    ];
+  }
+
   private function guessMapping(string $field, array $headers): string
   {
     $needle = strtolower($field);
@@ -733,5 +869,20 @@ final class ImportsController
   {
     $stmt = $pdo->query('SELECT id FROM academic_years WHERE is_active = 1 LIMIT 1');
     return (int)$stmt->fetchColumn();
+  }
+
+  private function guard(string $permission): bool
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    if ($userId <= 0) {
+      (new Response())->redirect('/login');
+      return false;
+    }
+    $rbac = new Rbac();
+    if (!$rbac->can($userId, $permission)) {
+      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
+      return false;
+    }
+    return true;
   }
 }

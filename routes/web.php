@@ -11,12 +11,17 @@ use App\Controllers\PasswordController;
 // Public main page
 $router->get('/', [PublicController::class, 'home']);
 $router->get('/public/announcements', [PublicController::class, 'announcements']);
+$router->get('/public/calendar', [PublicController::class, 'calendar']);
 
 // health + auth
 $router->get('/health', [DashboardController::class, 'health']);
 $router->get('/login',  [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'doLogin'])->middleware('csrf');
 $router->post('/logout',[AuthController::class, 'logout'])->middleware('csrf', 'auth');
+$router->get('/password/forgot', [PasswordController::class, 'forgot']);
+$router->post('/password/forgot', [PasswordController::class, 'sendReset'])->middleware('csrf');
+$router->get('/password/reset', [PasswordController::class, 'reset']);
+$router->post('/password/reset', [PasswordController::class, 'updateReset'])->middleware('csrf');
 $router->get('/password/change', [PasswordController::class, 'show'])->middleware('auth');
 $router->post('/password/change', [PasswordController::class, 'update'])->middleware('auth', 'csrf');
 
@@ -33,3 +38,5 @@ require dirname(__DIR__) . '/app/Modules/Training/routes.php';
 require dirname(__DIR__) . '/app/Modules/Bulletins/routes.php';
 require dirname(__DIR__) . '/app/Modules/Calendar/routes.php';
 require dirname(__DIR__) . '/app/Modules/Imports/routes.php';
+require dirname(__DIR__) . '/app/Modules/Reports/routes.php';
+require dirname(__DIR__) . '/app/Modules/Admin/routes.php';

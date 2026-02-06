@@ -5,6 +5,8 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
+use App\Core\Rbac\Rbac;
+use App\Core\Audit\Audit;
 
 final class AnnouncementsController
 {
@@ -108,11 +110,7 @@ final class AnnouncementsController
 
   public function create(): void
   {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'announcements']);
-      return;
-    }
+    if (!$this->guard('bulletins.manage')) return;
 
     $pdo = Db::pdo();
     $classes = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
@@ -124,11 +122,8 @@ final class AnnouncementsController
 
   public function store(): void
   {
+    if (!$this->guard('bulletins.manage')) return;
     $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'announcements']);
-      return;
-    }
 
     $title = trim($_POST['title'] ?? '');
     $message = trim($_POST['message'] ?? '');
@@ -180,6 +175,12 @@ final class AnnouncementsController
       $priority,
       $userId,
     ]);
+    $newId = (int)$pdo->lastInsertId();
+    Audit::log('announcements.create', 'announcements', (string)$newId, null, [
+      'title' => $title,
+      'status' => $status,
+      'scope' => $scope,
+    ]);
 
     Flash::set('success', 'Announcement created.');
     (new Response())->redirect('/announcements');
@@ -187,11 +188,7 @@ final class AnnouncementsController
 
   public function edit(Request $request): void
   {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'announcements']);
-      return;
-    }
+    if (!$this->guard('bulletins.manage')) return;
 
     $id = (int)$request->param('id');
     $pdo = Db::pdo();
@@ -218,11 +215,8 @@ final class AnnouncementsController
 
   public function update(Request $request): void
   {
+    if (!$this->guard('bulletins.manage')) return;
     $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'announcements']);
-      return;
-    }
 
     $id = (int)$request->param('id');
     $title = trim($_POST['title'] ?? '');
@@ -259,6 +253,9 @@ final class AnnouncementsController
     }
 
     $pdo = Db::pdo();
+    $beforeStmt = $pdo->prepare('SELECT * FROM announcements WHERE id = ?');
+    $beforeStmt->execute([$id]);
+    $before = $beforeStmt->fetch() ?: null;
     $stmt = $pdo->prepare('SELECT published_at FROM announcements WHERE id = ?');
     $stmt->execute([$id]);
     $currentPublishedAt = $stmt->fetchColumn() ?: null;
@@ -279,6 +276,11 @@ final class AnnouncementsController
       $priority,
       $id,
     ]);
+    Audit::log('announcements.update', 'announcements', (string)$id, $before ?: null, [
+      'title' => $title,
+      'status' => $status,
+      'scope' => $scope,
+    ]);
 
     Flash::set('success', 'Announcement updated.');
     (new Response())->redirect('/announcements');
@@ -287,6 +289,10 @@ final class AnnouncementsController
   private function isStaffAdmin(int $userId): bool
   {
     if ($userId <= 0) return false;
+    $override = $_SESSION['_role_override_code'] ?? null;
+    if ($override) {
+      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
+    }
     $pdo = Db::pdo();
     $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
     $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
@@ -317,5 +323,20 @@ final class AnnouncementsController
     $stmt = $pdo->prepare('SELECT c.id, c.name FROM class_teacher_assignments cta JOIN classes c ON c.id = cta.class_id WHERE cta.user_id = ? AND (cta.end_date IS NULL OR cta.end_date >= CURDATE()) ORDER BY c.name ASC');
     $stmt->execute([$userId]);
     return $stmt->fetchAll();
+  }
+
+  private function guard(string $permission): bool
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    if ($userId <= 0) {
+      (new Response())->redirect('/login');
+      return false;
+    }
+    $rbac = new Rbac();
+    if (!$rbac->can($userId, $permission)) {
+      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
+      return false;
+    }
+    return true;
   }
 }

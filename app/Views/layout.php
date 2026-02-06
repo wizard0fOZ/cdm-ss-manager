@@ -4,6 +4,32 @@
   $userId = (int)($_SESSION['user_id'] ?? 0);
   $userLabel = $userId > 0 ? 'User #' . $userId : 'Staff';
   $csrf = $_SESSION['_csrf'] ?? '';
+  $maintenanceBanner = null;
+  try {
+    if ($userId > 0) {
+      $pdo = \App\Core\Db\Db::pdo();
+      $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN (?, ?)');
+      $stmt->execute(['maintenance_mode', 'maintenance_message']);
+      $mode = null;
+      $message = null;
+      foreach ($stmt->fetchAll() as $row) {
+        if ($row['setting_key'] === 'maintenance_mode') $mode = strtoupper(trim((string)$row['setting_value']));
+        if ($row['setting_key'] === 'maintenance_message') $message = (string)$row['setting_value'];
+      }
+      if ($mode && $mode !== 'OFF') {
+        $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code = ? LIMIT 1');
+        $stmt->execute([$userId, 'SYSADMIN']);
+        if ($stmt->fetchColumn()) {
+          $maintenanceBanner = [
+            'mode' => $mode,
+            'message' => $message,
+          ];
+        }
+      }
+    }
+  } catch (\Throwable $e) {
+    $maintenanceBanner = null;
+  }
 ?>
 <!doctype html>
 <html lang="en">
@@ -17,6 +43,15 @@
 
       <div class="flex min-h-screen flex-1 flex-col">
         <?php require __DIR__ . '/partials/nav.php'; ?>
+
+        <?php if ($maintenanceBanner): ?>
+          <div class="mx-6 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span class="font-semibold">Maintenance mode is ON (<?= htmlspecialchars($maintenanceBanner['mode']) ?>).</span>
+            <?php if (!empty($maintenanceBanner['message'])): ?>
+              <span class="text-amber-700"> <?= htmlspecialchars($maintenanceBanner['message']) ?></span>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
 
         <?php require __DIR__ . '/partials/toast.php'; ?>
 

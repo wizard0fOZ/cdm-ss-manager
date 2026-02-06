@@ -4,11 +4,14 @@ namespace App\Controllers;
 use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
+use App\Core\Rbac\Rbac;
+use App\Core\Audit\Audit;
 
 final class StudentsController
 {
   public function index(): void
   {
+    if (!$this->guard('students.view')) return;
     $pdo = Db::pdo();
 
     $search = trim($_GET['q'] ?? '');
@@ -33,7 +36,7 @@ final class StudentsController
       $params[':class_id'] = $classId;
     }
 
-    $sql = "SELECT s.*, c.name AS class_name
+    $sql = "SELECT s.*, c.name AS class_name, ce.class_id AS class_id
             FROM students s
             LEFT JOIN student_class_enrollments ce
               ON ce.student_id = s.id AND ce.end_date IS NULL
@@ -53,10 +56,28 @@ final class StudentsController
         $student['dob_display'] = $this->formatDate($student['dob']);
         $student['age_display'] = $this->calcAge($student['dob']);
       }
+      $admission = $student['admission_type'] ?? 'NEW';
+      $missing = [];
+      if ($admission === 'TRANSFER') {
+        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
+        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
+        if (empty($student['doc_transfer_letter_url'])) $missing[] = 'Transfer';
+      } else {
+        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
+        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
+      }
+      $student['docs_missing'] = $missing;
     }
     unset($student);
 
     $classRows = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
+    $classIds = [];
+    foreach ($students as $student) {
+      if (!empty($student['class_id'])) {
+        $classIds[] = (int)$student['class_id'];
+      }
+    }
+    $classTeachers = $this->getClassTeachers($pdo, array_values(array_unique($classIds)));
 
     (new Response())->view('students/index.php', [
       'students' => $students,
@@ -64,11 +85,13 @@ final class StudentsController
       'status' => $status,
       'classId' => $classId,
       'classes' => $classRows,
+      'classTeachers' => $classTeachers,
     ]);
   }
 
   public function bulk(): void
   {
+    if (!$this->guard('students.edit')) return;
     $ids = array_filter(array_map('intval', $_POST['ids'] ?? []));
     $action = $_POST['bulk_action'] ?? '';
 
@@ -90,6 +113,7 @@ final class StudentsController
       $in = implode(',', array_fill(0, count($ids), '?'));
       $stmt = $pdo->prepare("UPDATE students SET status=? WHERE id IN ($in)");
       $stmt->execute(array_merge([$status], $ids));
+      Audit::log('students.bulk_status', 'students', implode(',', $ids), null, ['status' => $status]);
       (new Response())->redirect('/students');
       return;
     }
@@ -121,6 +145,7 @@ final class StudentsController
         }
 
         $pdo->commit();
+        Audit::log('students.bulk_assign_class', 'students', implode(',', $ids), null, ['class_id' => $classId]);
       } catch (\Throwable $e) {
         $pdo->rollBack();
         throw $e;
@@ -135,6 +160,7 @@ final class StudentsController
 
   public function create(): void
   {
+    if (!$this->guard('students.create')) return;
     $pdo = Db::pdo();
     $classRows = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
 
@@ -145,6 +171,7 @@ final class StudentsController
 
   public function store(): void
   {
+    if (!$this->guard('students.create')) return;
     $pdo = Db::pdo();
 
     $firstName = trim($_POST['first_name'] ?? '');
@@ -156,10 +183,42 @@ final class StudentsController
     $notes = trim($_POST['notes'] ?? '');
     $classId = trim($_POST['class_id'] ?? '');
     $isRcic = !empty($_POST['is_rcic']) ? 1 : 0;
+    $admissionType = strtoupper(trim($_POST['admission_type'] ?? 'NEW'));
+    if (!in_array($admissionType, ['NEW','TRANSFER'], true)) {
+      $admissionType = 'NEW';
+    }
+    $docBirthUrl = trim($_POST['doc_birth_cert_url'] ?? '');
+    $docBaptismUrl = trim($_POST['doc_baptism_cert_url'] ?? '');
+    $docTransferUrl = trim($_POST['doc_transfer_letter_url'] ?? '');
+    $docFhcUrl = trim($_POST['doc_fhc_cert_url'] ?? '');
+    $docBirth = $docBirthUrl !== '' ? 1 : 0;
+    $docBaptism = $docBaptismUrl !== '' ? 1 : 0;
+    $docTransfer = $docTransferUrl !== '' ? 1 : 0;
+    $docFhc = $docFhcUrl !== '' ? 1 : 0;
 
     $errors = [];
     if ($firstName === '' || $lastName === '') {
       $errors[] = 'First name and last name are required.';
+    }
+    if ($docBirthUrl !== '' && !filter_var($docBirthUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Birth certificate link must be a valid URL.';
+    }
+    if ($docBaptismUrl !== '' && !filter_var($docBaptismUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Baptism certificate link must be a valid URL.';
+    }
+    if ($docTransferUrl !== '' && !filter_var($docTransferUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Transfer letter link must be a valid URL.';
+    }
+    if ($docFhcUrl !== '' && !filter_var($docFhcUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'FHC certificate link must be a valid URL.';
+    }
+    if ($admissionType === 'TRANSFER') {
+      if ($docBirthUrl === '') $errors[] = 'Birth certificate link is required for transfer students.';
+      if ($docBaptismUrl === '') $errors[] = 'Baptism certificate link is required for transfer students.';
+      if ($docTransferUrl === '') $errors[] = 'Transfer letter link is required for transfer students.';
+    } else {
+      if ($docBirthUrl === '') $errors[] = 'Birth certificate link is required for new students.';
+      if ($docBaptismUrl === '') $errors[] = 'Baptism certificate link is required for new students.';
     }
 
     if ($errors) {
@@ -171,8 +230,8 @@ final class StudentsController
 
     $pdo->beginTransaction();
     try {
-      $stmt = $pdo->prepare('INSERT INTO students (first_name, last_name, full_name, dob, identity_number, is_rcic, address, status, notes) VALUES (?,?,?,?,?,?,?,?,?)');
-      $stmt->execute([$firstName, $lastName, $fullName, $dob, $identityNumber ?: null, $isRcic, $address ?: null, $status, $notes ?: null]);
+      $stmt = $pdo->prepare('INSERT INTO students (first_name, last_name, full_name, dob, identity_number, is_rcic, address, status, notes, admission_type, doc_birth_cert, doc_baptism_cert, doc_transfer_letter, doc_fhc_cert, doc_birth_cert_url, doc_baptism_cert_url, doc_transfer_letter_url, doc_fhc_cert_url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+      $stmt->execute([$firstName, $lastName, $fullName, $dob, $identityNumber ?: null, $isRcic, $address ?: null, $status, $notes ?: null, $admissionType, $docBirth, $docBaptism, $docTransfer, $docFhc, $docBirthUrl ?: null, $docBaptismUrl ?: null, $docTransferUrl ?: null, $docFhcUrl ?: null]);
       $studentId = (int)$pdo->lastInsertId();
 
       if ($classId !== '') {
@@ -193,6 +252,11 @@ final class StudentsController
       $this->syncGuardians($pdo, $studentId, $_POST['guardians'] ?? []);
 
       $pdo->commit();
+      Audit::log('students.create', 'students', (string)$studentId, null, [
+        'full_name' => $fullName,
+        'status' => $status,
+        'class_id' => $classId !== '' ? (int)$classId : null,
+      ]);
     } catch (\Throwable $e) {
       $pdo->rollBack();
       throw $e;
@@ -203,6 +267,7 @@ final class StudentsController
 
   public function show(Request $request): void
   {
+    if (!$this->guard('students.view')) return;
     $id = (int)$request->param('id');
     $pdo = Db::pdo();
 
@@ -214,16 +279,23 @@ final class StudentsController
 
     $sacrament = $this->fetchSacraments($pdo, $id);
     $guardians = $this->fetchGuardians($pdo, $id);
+    $teachers = [];
+    if (!empty($student['class_id'])) {
+      $teachers = $this->getClassTeachers($pdo, [(int)$student['class_id']]);
+      $teachers = $teachers[(int)$student['class_id']] ?? [];
+    }
 
     (new Response())->view('students/show.php', [
       'student' => $student,
       'sacrament' => $sacrament,
       'guardians' => $guardians,
+      'teachers' => $teachers,
     ]);
   }
 
   public function edit(Request $request): void
   {
+    if (!$this->guard('students.edit')) return;
     $id = (int)$request->param('id');
     $pdo = Db::pdo();
 
@@ -247,8 +319,10 @@ final class StudentsController
 
   public function update(Request $request): void
   {
+    if (!$this->guard('students.edit')) return;
     $id = (int)$request->param('id');
     $pdo = Db::pdo();
+    $before = $this->fetchStudent($pdo, $id) ?: null;
 
     $student = $this->fetchStudent($pdo, $id);
     if (!$student) {
@@ -265,10 +339,42 @@ final class StudentsController
     $notes = trim($_POST['notes'] ?? '');
     $classId = trim($_POST['class_id'] ?? '');
     $isRcic = !empty($_POST['is_rcic']) ? 1 : 0;
+    $admissionType = strtoupper(trim($_POST['admission_type'] ?? 'NEW'));
+    if (!in_array($admissionType, ['NEW','TRANSFER'], true)) {
+      $admissionType = 'NEW';
+    }
+    $docBirthUrl = trim($_POST['doc_birth_cert_url'] ?? '');
+    $docBaptismUrl = trim($_POST['doc_baptism_cert_url'] ?? '');
+    $docTransferUrl = trim($_POST['doc_transfer_letter_url'] ?? '');
+    $docFhcUrl = trim($_POST['doc_fhc_cert_url'] ?? '');
+    $docBirth = $docBirthUrl !== '' ? 1 : 0;
+    $docBaptism = $docBaptismUrl !== '' ? 1 : 0;
+    $docTransfer = $docTransferUrl !== '' ? 1 : 0;
+    $docFhc = $docFhcUrl !== '' ? 1 : 0;
 
     $errors = [];
     if ($firstName === '' || $lastName === '') {
       $errors[] = 'First name and last name are required.';
+    }
+    if ($docBirthUrl !== '' && !filter_var($docBirthUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Birth certificate link must be a valid URL.';
+    }
+    if ($docBaptismUrl !== '' && !filter_var($docBaptismUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Baptism certificate link must be a valid URL.';
+    }
+    if ($docTransferUrl !== '' && !filter_var($docTransferUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'Transfer letter link must be a valid URL.';
+    }
+    if ($docFhcUrl !== '' && !filter_var($docFhcUrl, FILTER_VALIDATE_URL)) {
+      $errors[] = 'FHC certificate link must be a valid URL.';
+    }
+    if ($admissionType === 'TRANSFER') {
+      if ($docBirthUrl === '') $errors[] = 'Birth certificate link is required for transfer students.';
+      if ($docBaptismUrl === '') $errors[] = 'Baptism certificate link is required for transfer students.';
+      if ($docTransferUrl === '') $errors[] = 'Transfer letter link is required for transfer students.';
+    } else {
+      if ($docBirthUrl === '') $errors[] = 'Birth certificate link is required for new students.';
+      if ($docBaptismUrl === '') $errors[] = 'Baptism certificate link is required for new students.';
     }
 
     if ($errors) {
@@ -280,8 +386,8 @@ final class StudentsController
 
     $pdo->beginTransaction();
     try {
-      $stmt = $pdo->prepare('UPDATE students SET first_name=?, last_name=?, full_name=?, dob=?, identity_number=?, is_rcic=?, address=?, status=?, notes=? WHERE id=?');
-      $stmt->execute([$firstName, $lastName, $fullName, $dob, $identityNumber ?: null, $isRcic, $address ?: null, $status, $notes ?: null, $id]);
+      $stmt = $pdo->prepare('UPDATE students SET first_name=?, last_name=?, full_name=?, dob=?, identity_number=?, is_rcic=?, address=?, status=?, notes=?, admission_type=?, doc_birth_cert=?, doc_baptism_cert=?, doc_transfer_letter=?, doc_fhc_cert=?, doc_birth_cert_url=?, doc_baptism_cert_url=?, doc_transfer_letter_url=?, doc_fhc_cert_url=? WHERE id=?');
+      $stmt->execute([$firstName, $lastName, $fullName, $dob, $identityNumber ?: null, $isRcic, $address ?: null, $status, $notes ?: null, $admissionType, $docBirth, $docBaptism, $docTransfer, $docFhc, $docBirthUrl ?: null, $docBaptismUrl ?: null, $docTransferUrl ?: null, $docFhcUrl ?: null, $id]);
 
       // reset active enrollment
       $pdo->prepare('UPDATE student_class_enrollments SET end_date = ? WHERE student_id = ? AND end_date IS NULL')->execute([date('Y-m-d'), $id]);
@@ -304,6 +410,11 @@ final class StudentsController
       $this->syncGuardians($pdo, $id, $_POST['guardians'] ?? []);
 
       $pdo->commit();
+      Audit::log('students.update', 'students', (string)$id, $before ?: null, [
+        'full_name' => $fullName,
+        'status' => $status,
+        'class_id' => $classId !== '' ? (int)$classId : null,
+      ]);
     } catch (\Throwable $e) {
       $pdo->rollBack();
       throw $e;
@@ -451,6 +562,24 @@ final class StudentsController
     return $stmt->fetchAll();
   }
 
+  private function getClassTeachers(\PDO $pdo, array $classIds): array
+  {
+    $ids = array_filter(array_map('intval', $classIds));
+    if (!$ids) return [];
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare("SELECT cta.class_id, cta.assignment_role, u.full_name
+      FROM class_teacher_assignments cta
+      JOIN users u ON u.id = cta.user_id
+      WHERE cta.class_id IN ($placeholders) AND (cta.end_date IS NULL OR cta.end_date >= CURDATE())
+      ORDER BY FIELD(cta.assignment_role, 'MAIN', 'ASSISTANT'), u.full_name ASC");
+    $stmt->execute($ids);
+    $map = [];
+    foreach ($stmt->fetchAll() as $row) {
+      $map[$row['class_id']][] = $row;
+    }
+    return $map;
+  }
+
   private function calcAge(?string $dob): ?int
   {
     if (!$dob) return null;
@@ -461,5 +590,20 @@ final class StudentsController
     } catch (\Throwable $e) {
       return null;
     }
+  }
+
+  private function guard(string $permission): bool
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    if ($userId <= 0) {
+      (new Response())->redirect('/login');
+      return false;
+    }
+    $rbac = new Rbac();
+    if (!$rbac->can($userId, $permission)) {
+      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
+      return false;
+    }
+    return true;
   }
 }

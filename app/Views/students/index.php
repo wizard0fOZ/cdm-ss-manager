@@ -103,9 +103,27 @@
                     <?php if (!empty($student['is_rcic'])): ?>
                       <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-700">RCIC</span>
                     <?php endif; ?>
+                    <?php if (!empty($student['docs_missing'])): ?>
+                      <span class="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-rose-700">
+                        Docs missing: <?= htmlspecialchars(implode(', ', $student['docs_missing'])) ?>
+                      </span>
+                    <?php endif; ?>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($student['class_name'] ?? '—') ?></td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div><?= htmlspecialchars($student['class_name'] ?? '—') ?></div>
+                  <?php
+                    $teacherRows = $classTeachers[(int)($student['class_id'] ?? 0)] ?? [];
+                    if ($teacherRows) {
+                      $labels = [];
+                      foreach ($teacherRows as $row) {
+                        $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                        $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+                      }
+                      echo '<div class="mt-1 text-xs text-slate-500">' . implode(', ', $labels) . '</div>';
+                    }
+                  ?>
+                </td>
                 <td class="px-4 py-3">
                   <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"><?= htmlspecialchars($student['status'] ?? '') ?></span>
                 </td>

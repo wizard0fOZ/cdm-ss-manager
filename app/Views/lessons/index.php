@@ -71,7 +71,20 @@
             <?php foreach ($lessons as $lesson): ?>
               <tr class="border-t border-slate-200">
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($lesson['session_date']) ?></td>
-                <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($lesson['class_name']) ?></td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div class="font-semibold text-slate-900"><?= htmlspecialchars($lesson['class_name']) ?></div>
+                  <?php
+                    $teacherRows = $classTeachers[(int)$lesson['class_id']] ?? [];
+                    if ($teacherRows) {
+                      $labels = [];
+                      foreach ($teacherRows as $row) {
+                        $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                        $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+                      }
+                      echo '<div class="mt-1 text-xs text-slate-500">' . implode(', ', $labels) . '</div>';
+                    }
+                  ?>
+                </td>
                 <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($lesson['title']) ?></td>
                 <td class="px-4 py-3">
                   <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"><?= htmlspecialchars($lesson['status']) ?></span>

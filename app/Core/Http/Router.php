@@ -75,7 +75,11 @@ final class Router
             return;
         }
 
-        $this->response->status(404)->html('404 Not Found');
+        $this->response->status(404)->view('errors/error.php', [
+            'title' => 'Page not found',
+            'message' => 'We could not find the page you were looking for.',
+            'details' => 'Route not found: ' . $this->request->path,
+        ]);
     }
 
     private function matchPath(string $routePath, string $requestPath, array &$params): bool
@@ -190,6 +194,51 @@ final class Router
                 $_SESSION['_csrf'] = bin2hex(random_bytes(32));
             }
 
+            // Maintenance mode (system_settings: maintenance_mode, maintenance_message)
+            try {
+                $mode = null;
+                $message = null;
+                $pdo = \App\Core\Db\Db::pdo();
+                $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN (?, ?)');
+                $stmt->execute(['maintenance_mode', 'maintenance_message']);
+                $rows = $stmt->fetchAll();
+                foreach ($rows as $row) {
+                    if ($row['setting_key'] === 'maintenance_mode') $mode = strtoupper(trim((string)$row['setting_value']));
+                    if ($row['setting_key'] === 'maintenance_message') $message = (string)$row['setting_value'];
+                }
+
+                $path = $req->path ?? '';
+                $isLogin = $path === '/login';
+                $isLogout = $path === '/logout';
+                $isHealth = $path === '/health';
+
+                if ($mode && $mode !== 'OFF' && !$isHealth) {
+                    $userId = (int)($_SESSION['user_id'] ?? 0);
+                    $isSysAdmin = false;
+                    if ($userId > 0) {
+                        $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code = ? LIMIT 1');
+                        $stmt->execute([$userId, 'SYSADMIN']);
+                        $isSysAdmin = (bool)$stmt->fetchColumn();
+                    }
+
+                    if (!$isSysAdmin) {
+                        $apply = false;
+                        if ($mode === 'BOTH') $apply = true;
+                        if ($mode === 'PUBLIC' && $userId <= 0) $apply = true;
+                        if ($mode === 'STAFF' && $userId > 0) $apply = true;
+
+                        if ($apply && !$isLogin && !$isLogout) {
+                            $res->status(503)->view('errors/maintenance.php', [
+                                'message' => $message ?: 'We are currently performing maintenance. Please check back shortly.',
+                            ]);
+                            return;
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fail open on maintenance checks
+            }
+
             $next();
         });
 
@@ -227,7 +276,11 @@ final class Router
             $sessionToken = $_SESSION['_csrf'] ?? '';
 
             if (!$token || !$sessionToken || !hash_equals($sessionToken, $token)) {
-                $res->status(419)->html('CSRF token mismatch');
+                $res->status(419)->view('errors/error.php', [
+                    'title' => 'Session expired',
+                    'message' => 'Your session has expired. Please refresh and try again.',
+                    'details' => 'CSRF token mismatch',
+                ]);
                 return;
             }
 

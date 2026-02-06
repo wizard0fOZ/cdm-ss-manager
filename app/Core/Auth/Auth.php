@@ -8,8 +8,9 @@ final class Auth
   public static function attempt(string $email, string $password): bool
   {
     $pdo = Db::pdo();
+    $email = strtolower(trim($email));
 
-    $stmt = $pdo->prepare("SELECT id, password_hash, status, must_change_password FROM users WHERE email = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, password_hash, status, must_change_password FROM users WHERE LOWER(email) = ? LIMIT 1");
     $stmt->execute([$email]);
     $u = $stmt->fetch();
 

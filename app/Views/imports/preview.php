@@ -6,6 +6,7 @@
   $mapping = $mapping ?? [];
   $rows = $rows ?? [];
   $rowIssues = $rowIssues ?? [];
+  $summary = $summary ?? ['total' => 0, 'existing' => 0, 'new' => 0, 'unknown' => 0];
   $isSysAdmin = !empty($isSysAdmin);
   $defaults = $defaults ?? [];
   $years = $years ?? [];
@@ -109,6 +110,24 @@
 
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <div class="text-sm font-semibold text-slate-900">Preview (first 5 rows)</div>
+      <div class="mt-2 grid gap-3 md:grid-cols-4 text-xs text-slate-600">
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wide text-slate-500">Total Rows</div>
+          <div class="mt-1 text-sm font-semibold text-slate-900"><?= (int)($summary['total'] ?? 0) ?></div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wide text-slate-500">Existing</div>
+          <div class="mt-1 text-sm font-semibold text-slate-900"><?= (int)($summary['existing'] ?? 0) ?></div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wide text-slate-500">New</div>
+          <div class="mt-1 text-sm font-semibold text-slate-900"><?= (int)($summary['new'] ?? 0) ?></div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wide text-slate-500">Unknown</div>
+          <div class="mt-1 text-sm font-semibold text-slate-900"><?= (int)($summary['unknown'] ?? 0) ?></div>
+        </div>
+      </div>
       <?php
         $hasWarnings = false;
         foreach ($rowIssues as $issue) {

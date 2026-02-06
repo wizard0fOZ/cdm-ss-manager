@@ -9,6 +9,24 @@
     <a href="/classes/create" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Add Class</a>
   </div>
 
+  <form method="get" class="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+    <div>
+      <label class="text-xs text-slate-500">Teacher</label>
+      <select name="teacher_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <option value="">All teachers</option>
+        <?php foreach ($teachers as $teacher): ?>
+          <option value="<?= (int)$teacher['id'] ?>" <?= (int)($teacherId ?? 0) === (int)$teacher['id'] ? 'selected' : '' ?>>
+            <?= htmlspecialchars($teacher['full_name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="flex items-end gap-2">
+      <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Filter</button>
+      <a href="/classes" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Reset</a>
+    </div>
+  </form>
+
   <form id="bulk-classes-form" method="post" action="/classes/bulk">
     <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
       <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['_csrf'] ?? '') ?>">
@@ -52,6 +70,7 @@
           <th class="px-4 py-3">Program</th>
           <th class="px-4 py-3">Grade</th>
           <th class="px-4 py-3">Stream</th>
+          <th class="px-4 py-3">Teachers</th>
           <th class="px-4 py-3">Session</th>
           <th class="px-4 py-3">Academic Year</th>
           <th class="px-4 py-3">Status</th>
@@ -61,7 +80,7 @@
       <tbody>
           <?php if (empty($classes)): ?>
             <tr>
-              <td colspan="9" class="px-4 py-6">
+              <td colspan="10" class="px-4 py-6">
                 <?php $message = 'No classes found. Add your first class.'; ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
@@ -76,6 +95,21 @@
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['program']) ?></td>
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['grade_level'] ?? '—') ?></td>
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['stream']) ?></td>
+              <td class="px-4 py-3 text-slate-600">
+                <?php
+                  $rows = $assignments[$class['id']] ?? [];
+                  if (!$rows) {
+                    echo '—';
+                  } else {
+                    $labels = [];
+                    foreach ($rows as $row) {
+                      $roleLabel = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                      $labels[] = htmlspecialchars($row['full_name']) . ' (' . $roleLabel . ')';
+                    }
+                    echo implode(', ', $labels);
+                  }
+                ?>
+              </td>
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['session_name'] ?? '—') ?></td>
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['academic_year_label'] ?? '—') ?></td>
               <td class="px-4 py-3">

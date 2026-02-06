@@ -12,6 +12,52 @@ final class DashboardController
     $isAdmin = $this->isStaffAdmin($userId);
 
     $pdo = Db::pdo();
+    $activeYear = $pdo->query('SELECT id, label FROM academic_years WHERE is_active = 1 LIMIT 1')->fetch();
+    $studentsCount = (int)$pdo->query('SELECT COUNT(*) FROM students')->fetchColumn();
+    if ($activeYear) {
+      $stmt = $pdo->prepare('SELECT COUNT(*) FROM classes WHERE academic_year_id = ?');
+      $stmt->execute([(int)$activeYear['id']]);
+      $classesCount = (int)$stmt->fetchColumn();
+    } else {
+      $classesCount = (int)$pdo->query('SELECT COUNT(*) FROM classes')->fetchColumn();
+    }
+    $teachersCount = (int)$pdo->query("SELECT COUNT(DISTINCT u.id)
+      FROM users u
+      JOIN user_roles ur ON ur.user_id = u.id
+      JOIN roles r ON r.id = ur.role_id
+      WHERE r.code = 'TEACHER' AND u.status = 'ACTIVE'")->fetchColumn();
+
+    $attendanceRate = null;
+    try {
+      $datesStmt = $pdo->query("SELECT DISTINCT session_date FROM class_sessions WHERE DAYOFWEEK(session_date) = 1 ORDER BY session_date DESC LIMIT 4");
+      $dates = array_map(fn($row) => $row['session_date'], $datesStmt->fetchAll());
+      if ($dates) {
+        $placeholders = implode(',', array_fill(0, count($dates), '?'));
+        $totStmt = $pdo->prepare("SELECT COUNT(*) FROM attendance_records ar JOIN class_sessions cs ON cs.id = ar.class_session_id WHERE cs.session_date IN ($placeholders) AND ar.status IS NOT NULL");
+        $totStmt->execute($dates);
+        $totalMarked = (int)$totStmt->fetchColumn();
+        $presentStmt = $pdo->prepare("SELECT COUNT(*) FROM attendance_records ar JOIN class_sessions cs ON cs.id = ar.class_session_id WHERE cs.session_date IN ($placeholders) AND ar.status = 'PRESENT'");
+        $presentStmt->execute($dates);
+        $presentCount = (int)$presentStmt->fetchColumn();
+        if ($totalMarked > 0) {
+          $attendanceRate = round(($presentCount / $totalMarked) * 100, 1);
+        }
+      }
+    } catch (\Throwable $e) {
+      $attendanceRate = null;
+    }
+
+    $pendingLessons = 0;
+    try {
+      $from = date('Y-m-d');
+      $to = (new \DateTime('+14 days'))->format('Y-m-d');
+      $stmt = $pdo->prepare("SELECT COUNT(*) FROM lesson_plans WHERE status = 'DRAFT' AND session_date BETWEEN ? AND ?");
+      $stmt->execute([$from, $to]);
+      $pendingLessons = (int)$stmt->fetchColumn();
+    } catch (\Throwable $e) {
+      $pendingLessons = 0;
+    }
+
     $start = new \DateTime('today');
     $end = (clone $start)->modify('+14 days')->setTime(23, 59, 59);
 
@@ -39,8 +85,37 @@ final class DashboardController
     $stmt->execute($params);
     $upcoming = $stmt->fetchAll();
 
+    $aFilters = ["a.status = 'PUBLISHED'", 'a.start_at <= NOW()', 'a.end_at >= NOW()'];
+    $aParams = [];
+    if (!$isAdmin) {
+      $classes = $this->getTeacherClasses($pdo, $userId);
+      $classIds = array_map('intval', array_column($classes, 'id'));
+      if ($classIds) {
+        $placeholders = implode(',', array_fill(0, count($classIds), '?'));
+        $aFilters[] = "(a.scope = 'GLOBAL' OR (a.scope = 'CLASS' AND a.class_id IN ($placeholders)))";
+        $aParams = array_merge($aParams, $classIds);
+      } else {
+        $aFilters[] = "a.scope = 'GLOBAL'";
+      }
+    }
+    $aSql = 'SELECT a.*, c.name AS class_name FROM announcements a LEFT JOIN classes c ON c.id = a.class_id';
+    if ($aFilters) {
+      $aSql .= ' WHERE ' . implode(' AND ', $aFilters);
+    }
+    $aSql .= ' ORDER BY (CASE WHEN a.is_pinned = 1 AND (a.pin_until IS NULL OR a.pin_until >= NOW()) THEN 1 ELSE 0 END) DESC, a.priority DESC, a.start_at DESC LIMIT 3';
+    $aStmt = $pdo->prepare($aSql);
+    $aStmt->execute($aParams);
+    $announcements = $aStmt->fetchAll();
+
     (new Response())->view('dashboard/index.php', [
       'upcoming' => $upcoming,
+      'announcements' => $announcements,
+      'studentsCount' => $studentsCount,
+      'classesCount' => $classesCount,
+      'teachersCount' => $teachersCount,
+      'activeYear' => $activeYear,
+      'attendanceRate' => $attendanceRate,
+      'pendingLessons' => $pendingLessons,
     ]);
   }
 
@@ -59,6 +134,10 @@ final class DashboardController
   private function isStaffAdmin(int $userId): bool
   {
     if ($userId <= 0) return false;
+    $override = $_SESSION['_role_override_code'] ?? null;
+    if ($override) {
+      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
+    }
     $pdo = Db::pdo();
     $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
     $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);

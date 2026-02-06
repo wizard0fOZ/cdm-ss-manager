@@ -184,10 +184,23 @@
                 $end = new DateTime($event['end_datetime']);
                 $allDay = (int)$event['all_day'] === 1;
                 $scopeLabel = $event['scope'] === 'CLASS' ? ('Class • ' . ($event['class_name'] ?? 'Unknown')) : 'Global';
+                $teacherRows = $classTeachers[(int)($event['class_id'] ?? 0)] ?? [];
               ?>
               <div class="rounded-xl border border-slate-200 px-3 py-3">
                 <div class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($event['title']) ?></div>
                 <div class="text-xs text-slate-500"><?= htmlspecialchars($scopeLabel) ?> • <?= htmlspecialchars($event['category']) ?></div>
+                <?php if (!empty($teacherRows)): ?>
+                  <div class="mt-1 text-xs text-slate-500">
+                    <?php
+                      $labels = [];
+                      foreach ($teacherRows as $row) {
+                        $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                        $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+                      }
+                      echo implode(', ', $labels);
+                    ?>
+                  </div>
+                <?php endif; ?>
                 <div class="mt-2 text-xs text-slate-600">
                   <?= htmlspecialchars($start->format('d M Y')) ?>
                   <?php if ($allDay): ?>
@@ -234,6 +247,7 @@
                 $end = new DateTime($event['end_datetime']);
                 $allDay = (int)$event['all_day'] === 1;
                 $scopeLabel = $event['scope'] === 'CLASS' ? ('Class • ' . ($event['class_name'] ?? 'Unknown')) : 'Global';
+                $teacherRows = $classTeachers[(int)($event['class_id'] ?? 0)] ?? [];
               ?>
               <tr class="border-t border-slate-200">
                 <td class="px-4 py-3">
@@ -249,7 +263,21 @@
                   <?php endif; ?>
                   <div class="text-xs text-slate-400">to <?= htmlspecialchars($end->format('d M Y')) ?><?= $allDay ? '' : ' ' . htmlspecialchars($end->format('H:i')) ?></div>
                 </td>
-                <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($scopeLabel) ?></td>
+                <td class="px-4 py-3 text-slate-600">
+                  <div><?= htmlspecialchars($scopeLabel) ?></div>
+                  <?php if (!empty($teacherRows)): ?>
+                    <div class="mt-1 text-xs text-slate-500">
+                      <?php
+                        $labels = [];
+                        foreach ($teacherRows as $row) {
+                          $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                          $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+                        }
+                        echo implode(', ', $labels);
+                      ?>
+                    </div>
+                  <?php endif; ?>
+                </td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($event['category']) ?></td>
                 <td class="px-4 py-3">
                   <?php if (!empty($isAdmin)): ?>
@@ -279,11 +307,22 @@
     $calendarDays = [];
     foreach ($calendarMap as $date => $events) {
       foreach ($events as $event) {
+        $teacherRows = $classTeachers[(int)($event['class_id'] ?? 0)] ?? [];
+        $teacherLabels = '';
+        if ($teacherRows) {
+          $labels = [];
+          foreach ($teacherRows as $row) {
+            $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+            $labels[] = $row['full_name'] . ' (' . $role . ')';
+          }
+          $teacherLabels = implode(', ', $labels);
+        }
         $calendarDays[$date][] = [
           'title' => $event['title'],
           'category' => $event['category'],
           'scope' => $event['scope'],
           'class_name' => $event['class_name'] ?? '',
+          'teachers' => $teacherLabels,
           'all_day' => (int)$event['all_day'] === 1,
           'start_time' => substr($event['start_datetime'], 11, 5),
           'end_time' => substr($event['end_datetime'], 11, 5),

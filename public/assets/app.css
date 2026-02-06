@@ -48,6 +48,20 @@ body {
   overflow: hidden;
 }
 
+button[disabled],
+[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
 @media (min-width: 1024px) {
   .glass { background: rgba(255, 255, 255, 0.92); }
 }

@@ -29,14 +29,36 @@
 
         <div>
           <label class="text-sm text-slate-700">Password</label>
-          <input name="password" type="password" class="mt-1 w-full rounded-lg border border-slate-300 p-2" required>
+          <div class="relative mt-1">
+            <input id="login-password" name="password" type="password" class="w-full rounded-lg border border-slate-300 p-2 pr-12" required>
+            <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-slate-100" data-toggle-password>
+              Show
+            </button>
+          </div>
         </div>
 
         <button class="w-full rounded-lg bg-slate-900 text-white py-2">
           Sign in
         </button>
       </form>
+
+      <div class="mt-4 flex items-center justify-between text-sm text-slate-600">
+        <a class="underline" href="/password/forgot">Forgot password?</a>
+        <a class="underline" href="/">Back to homepage</a>
+      </div>
     </div>
   </div>
+  <script>
+    (function () {
+      const btn = document.querySelector('[data-toggle-password]');
+      const input = document.getElementById('login-password');
+      if (!btn || !input) return;
+      btn.addEventListener('click', () => {
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.textContent = isHidden ? 'Hide' : 'Show';
+      });
+    })();
+  </script>
 </body>
 </html>

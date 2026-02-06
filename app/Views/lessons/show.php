@@ -22,6 +22,18 @@
       <div class="rounded-xl border border-slate-200 p-4">
         <div class="text-xs uppercase tracking-wide text-slate-500">Class</div>
         <div class="mt-2 text-sm text-slate-900"><?= htmlspecialchars($lesson['class_name'] ?? '') ?></div>
+        <?php if (!empty($classTeachers)): ?>
+          <div class="mt-2 text-xs text-slate-500">
+            <?php
+              $labels = [];
+              foreach ($classTeachers as $row) {
+                $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+              }
+              echo implode(', ', $labels);
+            ?>
+          </div>
+        <?php endif; ?>
         <div class="mt-2 text-xs text-slate-500">Session: <?= htmlspecialchars($lesson['session_name'] ?? '—') ?></div>
         <div class="mt-3">
           <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"><?= htmlspecialchars($lesson['status'] ?? '') ?></span>

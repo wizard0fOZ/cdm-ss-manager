@@ -21,6 +21,18 @@
         <div class="text-xs uppercase tracking-wide text-slate-500">Class</div>
         <div class="text-lg font-semibold text-slate-900"><?= htmlspecialchars($className) ?></div>
         <div class="text-xs text-slate-500">Session: <?= htmlspecialchars($class['session_name'] ?? '—') ?></div>
+        <?php if (!empty($teachers)): ?>
+          <div class="mt-2 text-xs text-slate-500">
+            <?php
+              $labels = [];
+              foreach ($teachers as $row) {
+                $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
+                $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
+              }
+              echo implode(', ', $labels);
+            ?>
+          </div>
+        <?php endif; ?>
       </div>
       <div class="flex items-center gap-2">
         <a href="/attendance?date=<?= htmlspecialchars($date) ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Back</a>

@@ -5,11 +5,14 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
+use App\Core\Rbac\Rbac;
+use App\Core\Audit\Audit;
 
 final class AttendanceController
 {
   public function index(Request $request): void
   {
+    if (!$this->guard('attendance.view')) return;
     $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
     $sessionId = (int)($request->input('session_id', 0));
     $program = trim((string)$request->input('program', ''));
@@ -77,10 +80,12 @@ final class AttendanceController
 
     $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY sort_order ASC')->fetchAll();
     $programs = $pdo->query('SELECT DISTINCT program FROM classes WHERE program IS NOT NULL ORDER BY program ASC')->fetchAll();
+    $classTeachers = $this->getClassTeachers($pdo, array_column($classes, 'id'));
 
     (new Response())->view('attendance/index.php', [
       'date' => $date,
       'classes' => $classes,
+      'classTeachers' => $classTeachers,
       'isAdmin' => $isAdmin,
       'sessions' => $sessions,
       'programs' => $programs,
@@ -92,6 +97,7 @@ final class AttendanceController
 
   public function take(Request $request): void
   {
+    if (!$this->guard('attendance.view')) return;
     $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
     $classId = (int)$request->param('id');
     $userId = (int)($_SESSION['user_id'] ?? 0);
@@ -116,11 +122,13 @@ final class AttendanceController
     $isLocked = $this->isLocked($classSession, $date);
 
     $summary = $this->buildSummary($pdo, $classSession['id']);
-    $this->renderTake($pdo, $class, $classSession, $date, $isLocked, $isAdmin, null, [], $summary);
+    $teachers = $this->getClassTeachers($pdo, [$classId]);
+    $this->renderTake($pdo, $class, $classSession, $date, $isLocked, $isAdmin, null, [], $summary, $teachers[$classId] ?? []);
   }
 
   public function save(Request $request): void
   {
+    if (!$this->guard('attendance.mark')) return;
     $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
     $classId = (int)$request->param('id');
     $userId = (int)($_SESSION['user_id'] ?? 0);
@@ -179,7 +187,8 @@ final class AttendanceController
       }
 
       $summary = $this->buildSummary($pdo, $classSession['id']);
-      $this->renderTake($pdo, $class, $classSession, $date, $isLocked, $isAdmin, $records, $errors, $summary);
+      $teachers = $this->getClassTeachers($pdo, [$classId]);
+      $this->renderTake($pdo, $class, $classSession, $date, $isLocked, $isAdmin, $records, $errors, $summary, $teachers[$classId] ?? []);
       return;
     }
 
@@ -225,6 +234,11 @@ final class AttendanceController
       }
 
       $pdo->commit();
+      Audit::log('attendance.save', 'class_sessions', (string)$classSession['id'], null, [
+        'class_id' => $classId,
+        'date' => $date,
+        'rows' => count($statuses),
+      ]);
     } catch (\Throwable $e) {
       $pdo->rollBack();
       throw $e;
@@ -236,18 +250,16 @@ final class AttendanceController
 
   public function lock(Request $request): void
   {
+    if (!$this->guard('attendance.lock')) return;
     $classId = (int)$request->param('id');
     $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
     $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'attendance']);
-      return;
-    }
 
     $pdo = Db::pdo();
     $classSession = $this->ensureClassSession($pdo, $classId, $date, $userId);
     $stmt = $pdo->prepare('UPDATE class_sessions SET status="LOCKED", locked_at=NOW(), locked_by=? WHERE id=?');
     $stmt->execute([$userId, $classSession['id']]);
+    Audit::log('attendance.lock', 'class_sessions', (string)$classSession['id'], null, ['class_id' => $classId, 'date' => $date]);
 
     Flash::set('success', 'Attendance locked.');
     (new Response())->redirect('/attendance/' . $classId . '?date=' . $date);
@@ -255,18 +267,16 @@ final class AttendanceController
 
   public function unlock(Request $request): void
   {
+    if (!$this->guard('attendance.lock')) return;
     $classId = (int)$request->param('id');
     $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
     $userId = (int)($_SESSION['user_id'] ?? 0);
-    if (!$this->isStaffAdmin($userId)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => 'attendance']);
-      return;
-    }
 
     $pdo = Db::pdo();
     $classSession = $this->ensureClassSession($pdo, $classId, $date, $userId);
     $stmt = $pdo->prepare('UPDATE class_sessions SET status="OPEN", locked_at=NULL, locked_by=NULL WHERE id=?');
     $stmt->execute([$classSession['id']]);
+    Audit::log('attendance.unlock', 'class_sessions', (string)$classSession['id'], null, ['class_id' => $classId, 'date' => $date]);
 
     Flash::set('success', 'Attendance unlocked.');
     (new Response())->redirect('/attendance/' . $classId . '?date=' . $date);
@@ -300,6 +310,10 @@ final class AttendanceController
   private function isStaffAdmin(int $userId): bool
   {
     if ($userId <= 0) return false;
+    $override = $_SESSION['_role_override_code'] ?? null;
+    if ($override) {
+      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
+    }
     $pdo = Db::pdo();
     $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
     $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
@@ -338,7 +352,7 @@ final class AttendanceController
     return date('Y-m-d');
   }
 
-  private function renderTake(\PDO $pdo, array $class, array $classSession, string $date, bool $isLocked, bool $isAdmin, ?array $records = null, array $errors = [], array $summary = []): void
+  private function renderTake(\PDO $pdo, array $class, array $classSession, string $date, bool $isLocked, bool $isAdmin, ?array $records = null, array $errors = [], array $summary = [], array $teachers = []): void
   {
     $studentsStmt = $pdo->prepare("SELECT s.id, s.full_name
                                    FROM student_class_enrollments sce
@@ -360,6 +374,7 @@ final class AttendanceController
     (new Response())->view('attendance/take.php', [
       'date' => $date,
       'class' => $class,
+      'teachers' => $teachers,
       'students' => $students,
       'records' => $records,
       'classSession' => $classSession,
@@ -385,5 +400,38 @@ final class AttendanceController
       $summary[$row['status']] = (int)$row['c'];
     }
     return $summary;
+  }
+
+  private function getClassTeachers(\PDO $pdo, array $classIds): array
+  {
+    $ids = array_filter(array_map('intval', $classIds));
+    if (!$ids) return [];
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare("SELECT cta.class_id, cta.assignment_role, u.full_name
+      FROM class_teacher_assignments cta
+      JOIN users u ON u.id = cta.user_id
+      WHERE cta.class_id IN ($placeholders) AND (cta.end_date IS NULL OR cta.end_date >= CURDATE())
+      ORDER BY FIELD(cta.assignment_role, 'MAIN', 'ASSISTANT'), u.full_name ASC");
+    $stmt->execute($ids);
+    $map = [];
+    foreach ($stmt->fetchAll() as $row) {
+      $map[$row['class_id']][] = $row;
+    }
+    return $map;
+  }
+
+  private function guard(string $permission): bool
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    if ($userId <= 0) {
+      (new Response())->redirect('/login');
+      return false;
+    }
+    $rbac = new Rbac();
+    if (!$rbac->can($userId, $permission)) {
+      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
+      return false;
+    }
+    return true;
   }
 }
