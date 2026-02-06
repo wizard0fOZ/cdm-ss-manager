@@ -1,0 +1,254 @@
+
+CDM Sunday School Manager (CDM-SS-Manager)
+========================================
+
+SYSTEM OVERVIEW
+---------------
+CDM-SS-Manager is a lightweight, production-ready Sunday School Information System (SIS)
+designed for Church of Divine Mercy. It manages students, teachers, classes, attendance,
+lesson plans, faith records, announcements, and administrative workflows.
+
+The system is intentionally built using plain PHP with modern frontend tools to ensure
+simplicity, cPanel compatibility, and future scalability.
+
+------------------------------------------------------------
+TECH STACK
+------------------------------------------------------------
+
+Backend
+- PHP 8.2 / 8.3
+- Apache (mod_php)
+- MySQL 8.x (InnoDB, utf8mb4)
+- Composer (dependency management)
+
+Frontend
+- Tailwind CSS
+- Alpine.js
+- HTMX
+- HTML5
+
+Tooling
+- Docker (dev environment parity with production)
+- Adminer (DB management)
+- Mailhog / Mailpit (mail testing)
+
+Hosting Target
+- ServerFreak cPanel (Apache + PHP-FPM compatible)
+
+------------------------------------------------------------
+SYSTEM ARCHITECTURE
+------------------------------------------------------------
+
+Architecture Style
+- Router-first MVC-lite
+- No full framework (Laravel-free)
+- Modular domain-based structure
+- PSR-4 autoloading
+
+Key Principles
+- Explicit routing
+- Thin controllers
+- Fat domain logic where needed
+- Minimal magic
+- Future Laravel migration-friendly
+
+------------------------------------------------------------
+DIRECTORY STRUCTURE
+------------------------------------------------------------
+
+/app
+  /core
+    /auth        Authentication & sessions
+    /db          Database connection & helpers
+    /http        Router, Request, Response, Middleware
+    /rbac        Roles & permissions
+    /validation  Input validation
+    /audit       Audit logging
+  /modules
+    /admin
+    /students
+    /teaching
+    /attendance
+    /lessons
+    /faithbook
+    /calendar
+    /bulletins
+    /training
+    /imports
+    /reports
+  /views
+/config
+/docker
+/public
+  /assets
+  /uploads
+  index.php
+/routes
+  web.php
+  api.php
+/sql
+/storage
+/vendor
+.env
+
+------------------------------------------------------------
+CORE MODULES
+------------------------------------------------------------
+
+1. Authentication & RBAC
+- Login / logout
+- Role-based access control
+- Roles:
+  - SYSADMIN
+  - STAFF_ADMIN (Coordinator, Office Admins, Core Team)
+  - TEACHER (Teacher & Assistant)
+
+2. Student Management
+- Student profile
+- Guardians (flexible relationships)
+- Sacrament records
+- Enrollment history
+- Academic year promotion
+
+3. Academic Structure
+- Academic years
+- Two terms per year
+- Classes (program, grade, stream)
+- Sessions (Sunday time blocks)
+
+4. Teaching & Attendance
+- Class-teacher assignments
+- Attendance marking
+- Bulk mark present/absent
+- Session locking
+
+5. Lesson Plans
+- Title, description, content
+- Lesson date
+- Optional URL
+- Draft / publish states
+
+6. Faith Book (Digital Report Book)
+- Per-student faith records
+- Auto carried forward across years
+- Multiple entry types
+
+7. Teacher Training
+- PSO certificates
+- Formation records
+- Upload / link evidence
+- Expiry tracking
+
+8. Announcements & Calendar
+- Global or class-specific
+- Scheduled visibility
+- Academic-year scoped calendar
+
+9. Bulk Imports
+- Students / teachers / classes
+- Job tracking
+- Row-level error reporting
+
+10. Audit Logs
+- User actions
+- Before/after JSON
+- IP and user-agent tracking
+
+------------------------------------------------------------
+DATABASE OVERVIEW (MYSQL 8.x)
+------------------------------------------------------------
+
+Key Characteristics
+- Engine: InnoDB
+- Charset: utf8mb4
+- Collation: utf8mb4_0900_ai_ci
+- Strict SQL mode
+
+Core Tables
+- users
+- roles
+- permissions
+- user_roles
+- role_permissions
+- students
+- student_guardians
+- student_sacrament_info
+- academic_years
+- terms
+- sessions
+- classes
+- student_class_enrollments
+- class_teacher_assignments
+- class_sessions
+- attendance_records
+- lesson_plans
+- faith_book_records
+- teacher_training_records
+- calendar_events
+- system_announcements
+- import_jobs
+- import_job_rows
+- audit_logs
+- system_settings
+- refresh_tokens
+- password_resets
+- user_invites
+
+------------------------------------------------------------
+ROUTING STRATEGY
+------------------------------------------------------------
+
+- Single front controller: /public/index.php
+- Explicit route registration via Router
+- Middleware support:
+  - auth
+  - role / permission checks
+- Separate web.php and api.php
+
+------------------------------------------------------------
+SECURITY NOTES
+------------------------------------------------------------
+
+- Password hashing using password_hash()
+- CSRF protection (token-based)
+- Prepared statements only
+- File uploads stored outside public root
+- RBAC enforced at route-level
+- Audit logging enabled
+
+------------------------------------------------------------
+DEPLOYMENT FLOW
+------------------------------------------------------------
+
+Local Development
+- Docker Compose
+- Apache + PHP container
+- MySQL container
+- Adminer
+- Mail testing service
+
+Production (cPanel)
+- Upload files
+- composer install (or vendor committed)
+- Import SQL schema
+- Configure .env
+- Point domain to /public
+
+------------------------------------------------------------
+FUTURE ROADMAP
+------------------------------------------------------------
+
+Phase 2
+- API hardening
+- Parent portal
+- Export to PDF/Excel
+- Notification system
+
+Phase 3
+- Laravel migration (optional)
+- Queue workers
+- Multi-parish support
+
+------------------------------------------------------------
+END OF DOCUMENT
+------------------------------------------------------------

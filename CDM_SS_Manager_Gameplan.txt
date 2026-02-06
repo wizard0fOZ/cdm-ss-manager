@@ -1,0 +1,252 @@
+
+CDM Sunday School Manager (CDM-SS-Manager)
+PROJECT GAMEPLAN
+========================================
+
+PURPOSE
+-------
+This gameplan outlines the phased, practical development approach for CDM-SS-Manager.
+The goal is to deliver a stable, usable system early, then incrementally expand features
+without over-engineering or framework lock-in.
+
+------------------------------------------------------------
+GUIDING PRINCIPLES
+------------------------------------------------------------
+
+- Keep the system usable at every phase
+- Prefer clarity over abstraction
+- No premature optimization
+- cPanel-compatible at all times
+- Laravel migration-friendly structure
+- Security and data integrity first
+
+------------------------------------------------------------
+PHASE 0 – FOUNDATION (COMPLETED)
+------------------------------------------------------------
+
+Status: DONE
+
+- Lock tech stack:
+  PHP 8.x + MySQL 8.x + Tailwind + Alpine + HTMX
+- Docker-based dev environment
+- Composer setup
+- Router-first architecture
+- Middleware support
+- Auth flow (login/logout)
+- RBAC (roles + permissions)
+- SQL schema finalized
+- Adminer + mail testing wired
+
+Outcome:
+- System boots cleanly
+- Login and dashboard accessible
+- Database schema production-ready
+
+------------------------------------------------------------
+PHASE 1 – PUBLIC SITE
+------------------------------------------------------------
+
+Goals:
+- Present church Sunday School info
+- Zero authentication required
+- Clean, minimal, responsive
+
+Features:
+- Public homepage
+- Org chart
+- PIC / key contacts
+- Contact Us email button (mailto)
+- Subtle footer link to /login
+
+Pages:
+- /
+- /contact (optional static)
+- Footer with Staff Login
+
+Notes:
+- No database dependency needed
+- Keep views simple
+- SEO-friendly markup
+
+------------------------------------------------------------
+PHASE 2 – CORE INTERNAL LAYOUT
+------------------------------------------------------------
+
+Goals:
+- Consistent admin UI
+- Reusable layout and navigation
+
+Features:
+- Auth-protected layout
+- Sidebar navigation
+- Top bar (user info, logout)
+- Flash messages
+- Error handling pages
+
+Outcome:
+- All internal modules share one layout
+- Visual consistency locked
+
+------------------------------------------------------------
+PHASE 3 – STUDENT MANAGEMENT (PRIORITY)
+------------------------------------------------------------
+
+Goals:
+- Central source of truth for students
+
+Features:
+- Student CRUD
+- Guardian management
+- Sacrament records
+- Enrollment history
+- Academic year promotion
+- View-only mode for teachers
+
+Routes:
+- /students
+- /students/create
+- /students/{id}
+- /students/{id}/edit
+
+Outcome:
+- Office admins can manage records digitally
+- Paper records no longer required
+
+------------------------------------------------------------
+PHASE 4 – ACADEMIC STRUCTURE
+------------------------------------------------------------
+
+Goals:
+- Model real Sunday School structure
+
+Features:
+- Academic years
+- Terms (2 per year)
+- Sessions (Sunday blocks)
+- Classes (Paul/Peter, languages)
+
+Outcome:
+- Foundation for attendance & lessons
+
+------------------------------------------------------------
+PHASE 5 – ATTENDANCE
+------------------------------------------------------------
+
+Goals:
+- Fast, Sunday-friendly attendance
+
+Features:
+- Session auto-generation
+- Mark all present
+- Individual overrides
+- Lock attendance
+- Audit trail
+
+Outcome:
+- Teachers finish attendance in minutes
+
+------------------------------------------------------------
+PHASE 6 – LESSON PLANS
+------------------------------------------------------------
+
+Goals:
+- Central lesson visibility
+
+Features:
+- Lesson drafts
+- Publish lessons
+- Attach URLs/materials
+- Per-class lesson history
+
+Outcome:
+- Teaching continuity year-to-year
+
+------------------------------------------------------------
+PHASE 7 – FAITH BOOK
+------------------------------------------------------------
+
+Goals:
+- Digital student report book
+
+Features:
+- Per-student records
+- Multiple entry types
+- Auto carry-forward across years
+- Teacher + admin access
+
+Outcome:
+- Long-term faith formation tracking
+
+------------------------------------------------------------
+PHASE 8 – TEACHER TRAINING
+------------------------------------------------------------
+
+Goals:
+- Compliance & formation tracking
+
+Features:
+- PSO certificates
+- Formation records
+- Upload/link evidence
+- Expiry reminders (future)
+
+Outcome:
+- Admin oversight made easy
+
+------------------------------------------------------------
+PHASE 9 – ANNOUNCEMENTS & CALENDAR
+------------------------------------------------------------
+
+Goals:
+- Central communication
+
+Features:
+- Announcements
+- Class-specific bulletins
+- Academic calendar events
+
+Outcome:
+- Reduced WhatsApp dependency
+
+------------------------------------------------------------
+PHASE 10 – BULK IMPORTS
+------------------------------------------------------------
+
+Goals:
+- Migrate legacy data
+
+Features:
+- Excel/CSV upload
+- Row-level validation
+- Error reporting
+
+Outcome:
+- Smooth transition from paper to system
+
+------------------------------------------------------------
+PHASE 11 – HARDENING & POLISH
+------------------------------------------------------------
+
+Goals:
+- Production confidence
+
+Features:
+- Permissions review
+- UI polish
+- Performance tuning
+- Security review
+- Backup procedures
+
+------------------------------------------------------------
+OPTIONAL FUTURE PHASES
+------------------------------------------------------------
+
+- Parent portal
+- Notifications (email/WhatsApp)
+- PDF exports
+- API exposure
+- Laravel migration
+
+------------------------------------------------------------
+END OF GAMEPLAN
+------------------------------------------------------------
