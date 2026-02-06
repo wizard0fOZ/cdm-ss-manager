@@ -326,6 +326,146 @@ final class CalendarController
     exit;
   }
 
+  public function exportIcal(Request $request): void
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    $isAdmin = $this->isStaffAdmin($userId);
+    $pdo = Db::pdo();
+
+    $yearFilter = (int)($request->input('year_id', 0));
+    $classFilter = (int)($request->input('class_id', 0));
+    $termFilter = (int)($request->input('term_id', 0));
+    $category = trim((string)$request->input('category', ''));
+    $scope = trim((string)$request->input('scope', ''));
+    $q = trim((string)$request->input('q', ''));
+    $myClassesOnly = (int)($request->input('my_classes', 0)) === 1;
+
+    $classes = $isAdmin ? $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll() : $this->getTeacherClasses($pdo, $userId);
+    if (!$isAdmin && $classFilter > 0) {
+      $allowedIds = array_map('intval', array_column($classes, 'id'));
+      if (!in_array($classFilter, $allowedIds, true)) {
+        $classFilter = 0;
+      }
+    }
+
+    $terms = [];
+    if ($yearFilter > 0) {
+      $stmt = $pdo->prepare('SELECT id, label, start_date, end_date FROM terms WHERE academic_year_id = ? ORDER BY term_number ASC');
+      $stmt->execute([$yearFilter]);
+      $terms = $stmt->fetchAll();
+    }
+    $termRow = null;
+    if ($termFilter > 0) {
+      foreach ($terms as $term) {
+        if ((int)$term['id'] === $termFilter) {
+          $termRow = $term;
+          break;
+        }
+      }
+      if (!$termRow) {
+        $termFilter = 0;
+      }
+    }
+
+    $filters = [];
+    $params = [];
+    if ($yearFilter > 0) {
+      $filters[] = 'e.academic_year_id = ?';
+      $params[] = $yearFilter;
+    }
+    if ($classFilter > 0) {
+      $filters[] = 'e.class_id = ?';
+      $params[] = $classFilter;
+    }
+    if ($category !== '') {
+      $filters[] = 'e.category = ?';
+      $params[] = $category;
+    }
+    if ($scope !== '') {
+      $filters[] = 'e.scope = ?';
+      $params[] = $scope;
+    }
+    if ($q !== '') {
+      $filters[] = '(e.title LIKE ? OR e.description LIKE ?)';
+      $params[] = "%$q%";
+      $params[] = "%$q%";
+    }
+    if ($termFilter > 0 && $termRow) {
+      $filters[] = '(e.start_datetime <= ? AND e.end_datetime >= ?)';
+      $params[] = $termRow['end_date'] . ' 23:59:59';
+      $params[] = $termRow['start_date'] . ' 00:00:00';
+    }
+    if (!$isAdmin) {
+      $teacherClassIds = array_map('intval', array_column($classes, 'id'));
+      if ($teacherClassIds) {
+        $placeholders = implode(',', array_fill(0, count($teacherClassIds), '?'));
+        if ($myClassesOnly) {
+          $filters[] = "(e.scope = 'CLASS' AND e.class_id IN ($placeholders))";
+          $params = array_merge($params, $teacherClassIds);
+        } else {
+          $filters[] = "(e.scope = 'GLOBAL' OR (e.scope = 'CLASS' AND e.class_id IN ($placeholders)))";
+          $params = array_merge($params, $teacherClassIds);
+        }
+      } else {
+        $filters[] = "e.scope = 'GLOBAL'";
+      }
+    }
+
+    $sql = 'SELECT e.*, c.name AS class_name FROM calendar_events e LEFT JOIN classes c ON c.id = e.class_id';
+    if ($filters) {
+      $sql .= ' WHERE ' . implode(' AND ', $filters);
+    }
+    $sql .= ' ORDER BY e.start_datetime ASC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $events = $stmt->fetchAll();
+
+    $lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//CDM SS Manager//Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+    ];
+
+    $now = new \DateTime();
+    $dtstamp = $now->format('Ymd\\THis');
+    foreach ($events as $event) {
+      $uid = 'cdm-' . $event['id'] . '@cdm-ss-manager';
+      $title = $this->icalEscape($event['title']);
+      $desc = $this->icalEscape($event['description'] ?? '');
+      $scope = $event['scope'] === 'CLASS' ? ('Class • ' . ($event['class_name'] ?? '')) : 'Global';
+      $desc = trim($desc . ($scope ? \"\\nScope: $scope\" : ''));
+
+      $lines[] = 'BEGIN:VEVENT';
+      $lines[] = 'UID:' . $uid;
+      $lines[] = 'DTSTAMP:' . $dtstamp;
+      if ((int)$event['all_day'] === 1) {
+        $start = (new \DateTime($event['start_datetime']))->format('Ymd');
+        $end = (new \DateTime($event['end_datetime']))->modify('+1 day')->format('Ymd');
+        $lines[] = 'DTSTART;VALUE=DATE:' . $start;
+        $lines[] = 'DTEND;VALUE=DATE:' . $end;
+      } else {
+        $start = (new \DateTime($event['start_datetime']))->format('Ymd\\THis');
+        $end = (new \DateTime($event['end_datetime']))->format('Ymd\\THis');
+        $lines[] = 'DTSTART:' . $start;
+        $lines[] = 'DTEND:' . $end;
+      }
+      $lines[] = 'SUMMARY:' . $title;
+      if ($desc !== '') {
+        $lines[] = 'DESCRIPTION:' . $desc;
+      }
+      $lines[] = 'END:VEVENT';
+    }
+
+    $lines[] = 'END:VCALENDAR';
+
+    header('Content-Type: text/calendar; charset=utf-8');
+    header('Content-Disposition: attachment; filename=\"calendar_events.ics\"');
+    echo implode(\"\\r\\n\", $lines);
+    exit;
+  }
+
   public function create(): void
   {
     $userId = (int)($_SESSION['user_id'] ?? 0);
@@ -555,6 +695,15 @@ final class CalendarController
   {
     if (!$value) return null;
     return substr($value, 11, 5);
+  }
+
+  private function icalEscape(string $value): string
+  {
+    $value = str_replace(\"\\r\", '', $value);
+    $value = str_replace(\"\\n\", '\\\\n', $value);
+    $value = str_replace(',', '\\\\,', $value);
+    $value = str_replace(';', '\\\\;', $value);
+    return $value;
   }
 
   private function getTeacherClasses(\PDO $pdo, int $userId): array

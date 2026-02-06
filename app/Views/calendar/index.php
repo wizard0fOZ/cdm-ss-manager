@@ -106,6 +106,7 @@
 
       <div class="flex items-center gap-2">
         <a href="/calendar/export?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm">Export CSV</a>
+        <a href="/calendar/ical?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm">Export iCal</a>
         <?php if (!empty($isAdmin)): ?>
           <a href="/calendar/create" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">New Event</a>
         <?php endif; ?>
