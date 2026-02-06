@@ -9,7 +9,7 @@
     $lastName = $lastName ?: (count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : '');
   }
 
-  $dob = $student['dob_display'] ?? '';
+  $dob = $student['dob'] ?? '';
   $identityNumber = $student['identity_number'] ?? '';
   $status = $student['status'] ?? 'ACTIVE';
   $address = $student['address'] ?? '';
@@ -54,8 +54,8 @@
       <input name="last_name" value="<?= htmlspecialchars($lastName) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
     <div>
-      <label class="text-sm text-slate-600">Date of Birth (dd/mm/yyyy)</label>
-      <input name="dob" value="<?= htmlspecialchars($dob) ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <label class="text-sm text-slate-600">Date of Birth</label>
+      <input type="date" name="dob" value="<?= htmlspecialchars($dob) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
       <p class="mt-1 text-xs text-slate-400">Optional, but needed for Age + FHC guidance.</p>
     </div>
     <div>
@@ -63,7 +63,7 @@
         <label class="text-sm text-slate-600">Class</label>
         <a href="/classes" class="text-xs text-slate-500 hover:text-slate-700">Create class</a>
       </div>
-      <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search">
         <option value="">Select a class</option>
         <?php foreach ($classes as $class): ?>
           <option value="<?= (int)$class['id'] ?>" <?= (string)$selectedClassId === (string)$class['id'] ? 'selected' : '' ?>>
@@ -78,7 +78,7 @@
     </div>
     <div>
       <label class="text-sm text-slate-600">Status</label>
-      <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search">
         <?php foreach (['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'] as $opt): ?>
           <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>><?= $opt ?></option>
         <?php endforeach; ?>
@@ -199,8 +199,8 @@
         <input name="place_of_baptism" value="<?= htmlspecialchars($sacrament['place_of_baptism'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
       </div>
       <div>
-        <label class="text-sm text-slate-600">Date of Baptism (dd/mm/yyyy)</label>
-        <input name="date_of_baptism" value="<?= htmlspecialchars($sacrament['date_of_baptism_display'] ?? '') ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <label class="text-sm text-slate-600">Date of Baptism</label>
+      <input type="date" name="date_of_baptism" value="<?= htmlspecialchars($sacrament['date_of_baptism'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
       </div>
       <div>
         <label class="text-sm text-slate-600">Godfather</label>
@@ -215,8 +215,8 @@
     <div class="grid gap-4 md:grid-cols-2" data-sacrament-field>
       <div class="md:col-span-2 text-xs uppercase tracking-wide text-slate-500">First Holy Communion (FHC)</div>
     <div>
-      <label class="text-sm text-slate-600">Date of First Holy Communion (dd/mm/yyyy)</label>
-      <input name="date_of_fhc" value="<?= htmlspecialchars($sacrament['date_of_first_holy_communion_display'] ?? '') ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <label class="text-sm text-slate-600">Date of First Holy Communion</label>
+      <input type="date" name="date_of_fhc" value="<?= htmlspecialchars($sacrament['date_of_first_holy_communion'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
       <p class="mt-1 text-xs text-slate-400">Usually around age 12–13. Leave blank if not yet.</p>
     </div>
       <div>
@@ -228,8 +228,8 @@
     <div class="grid gap-4 md:grid-cols-2" data-sacrament-field>
       <div class="md:col-span-2 text-xs uppercase tracking-wide text-slate-500">Confirmation</div>
       <div>
-        <label class="text-sm text-slate-600">Date of Confirmation (dd/mm/yyyy)</label>
-        <input name="date_of_confirmation" value="<?= htmlspecialchars($sacrament['date_of_confirmation_display'] ?? '') ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <label class="text-sm text-slate-600">Date of Confirmation</label>
+      <input type="date" name="date_of_confirmation" value="<?= htmlspecialchars($sacrament['date_of_confirmation'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
       </div>
       <div>
         <label class="text-sm text-slate-600">Place of Confirmation</label>

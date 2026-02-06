@@ -34,7 +34,7 @@
   <div class="grid gap-4 md:grid-cols-3">
     <div>
       <label class="text-sm text-slate-600">Program</label>
-      <select name="program" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <select name="program" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
         <option value="">Select program</option>
         <?php foreach ($programs as $opt): ?>
           <option value="<?= $opt ?>" <?= $program === $opt ? 'selected' : '' ?>><?= $opt ?></option>
@@ -47,7 +47,7 @@
     </div>
     <div>
       <label class="text-sm text-slate-600">Stream</label>
-      <select name="stream" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <select name="stream" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
         <?php foreach ($streams as $opt): ?>
           <option value="<?= $opt ?>" <?= $stream === $opt ? 'selected' : '' ?>><?= $opt ?></option>
         <?php endforeach; ?>
@@ -58,7 +58,7 @@
   <div class="grid gap-4 md:grid-cols-2">
     <div>
       <label class="text-sm text-slate-600">Session</label>
-      <select name="session_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <select name="session_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
         <option value="">Select session</option>
         <?php foreach ($sessions as $session): ?>
           <option value="<?= (int)$session['id'] ?>" <?= (string)$sessionId === (string)$session['id'] ? 'selected' : '' ?>>
@@ -69,7 +69,7 @@
     </div>
     <div>
       <label class="text-sm text-slate-600">Academic Year</label>
-      <select name="academic_year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+      <select name="academic_year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search">
         <option value="">Select year</option>
         <?php foreach ($years as $year): ?>
           <option value="<?= (int)$year['id'] ?>" <?= (string)$academicYearId === (string)$year['id'] ? 'selected' : '' ?>>
@@ -91,7 +91,7 @@
     </div>
     <div>
       <label class="text-sm text-slate-600">Status</label>
-      <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
         <?php foreach ($statuses as $opt): ?>
           <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>><?= $opt ?></option>
         <?php endforeach; ?>

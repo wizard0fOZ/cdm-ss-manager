@@ -3,8 +3,8 @@
   $academicYearId = $term['academic_year_id'] ?? '';
   $termNumber = $term['term_number'] ?? '';
   $label = $term['label'] ?? '';
-  $startDate = $term['start_date_display'] ?? '';
-  $endDate = $term['end_date_display'] ?? '';
+  $startDate = $term['start_date'] ?? '';
+  $endDate = $term['end_date'] ?? '';
 ?>
 
 <?php if (!empty($errors)): ?>
@@ -22,7 +22,7 @@
 
   <div>
     <label class="text-sm text-slate-600">Academic Year</label>
-    <select name="academic_year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+    <select name="academic_year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
       <option value="">Select academic year</option>
       <?php foreach ($years as $year): ?>
         <option value="<?= (int)$year['id'] ?>" <?= (string)$academicYearId === (string)$year['id'] ? 'selected' : '' ?>>
@@ -35,7 +35,7 @@
   <div class="grid gap-4 md:grid-cols-2">
     <div>
       <label class="text-sm text-slate-600">Term Number</label>
-      <select name="term_number" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <select name="term_number" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-enhance="search" required>
         <option value="">Select term</option>
         <option value="1" <?= (string)$termNumber === '1' ? 'selected' : '' ?>>Term 1</option>
         <option value="2" <?= (string)$termNumber === '2' ? 'selected' : '' ?>>Term 2</option>
@@ -49,12 +49,12 @@
 
   <div class="grid gap-4 md:grid-cols-2">
     <div>
-      <label class="text-sm text-slate-600">Start Date (dd/mm/yyyy)</label>
-      <input name="start_date" value="<?= htmlspecialchars($startDate) ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <label class="text-sm text-slate-600">Start Date</label>
+      <input type="date" name="start_date" value="<?= htmlspecialchars($startDate) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
     <div>
-      <label class="text-sm text-slate-600">End Date (dd/mm/yyyy)</label>
-      <input name="end_date" value="<?= htmlspecialchars($endDate) ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <label class="text-sm text-slate-600">End Date</label>
+      <input type="date" name="end_date" value="<?= htmlspecialchars($endDate) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
   </div>
 

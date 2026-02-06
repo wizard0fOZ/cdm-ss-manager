@@ -12,7 +12,7 @@
   <form id="bulk-years-form" method="post" action="/academic-years/bulk" class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
     <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['_csrf'] ?? '') ?>">
     <label class="text-xs text-slate-500">Bulk Action</label>
-    <select name="bulk_action" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" required>
+    <select name="bulk_action" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search" required>
       <option value="">Select</option>
       <option value="set_active">Set Active (one)</option>
     </select>

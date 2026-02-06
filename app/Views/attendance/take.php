@@ -1,5 +1,11 @@
 <?php
-  $pageTitle = 'Attendance - ' . ($class['name'] ?? 'Class');
+  $cleanLabel = function ($value) {
+    $value = trim((string)$value);
+    $value = preg_replace('/_+/', ' ', $value);
+    return trim($value, " _");
+  };
+  $className = $cleanLabel($class['name'] ?? 'Class');
+  $pageTitle = 'Attendance - ' . $className;
   $pageSubtitle = 'Date: ' . htmlspecialchars($date);
   $csrf = $_SESSION['_csrf'] ?? '';
 
@@ -13,7 +19,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <div class="text-xs uppercase tracking-wide text-slate-500">Class</div>
-        <div class="text-lg font-semibold text-slate-900"><?= htmlspecialchars($class['name'] ?? '') ?></div>
+        <div class="text-lg font-semibold text-slate-900"><?= htmlspecialchars($className) ?></div>
         <div class="text-xs text-slate-500">Session: <?= htmlspecialchars($class['session_name'] ?? '—') ?></div>
       </div>
       <div class="flex items-center gap-2">

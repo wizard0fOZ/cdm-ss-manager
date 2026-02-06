@@ -22,3 +22,17 @@
   closeBtn?.addEventListener('click', closeSidebar);
   overlay?.addEventListener('click', closeSidebar);
 })();
+
+(function () {
+  if (!window.Choices) return;
+  const selects = document.querySelectorAll('select[data-enhance="search"]');
+  selects.forEach((select) => {
+    if (select.dataset.enhanced === '1') return;
+    new Choices(select, {
+      searchEnabled: true,
+      shouldSort: false,
+      itemSelectText: '',
+    });
+    select.dataset.enhanced = '1';
+  });
+})();

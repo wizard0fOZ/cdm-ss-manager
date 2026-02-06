@@ -1,8 +1,8 @@
 <?php
   $csrf = $_SESSION['_csrf'] ?? '';
   $label = $year['label'] ?? '';
-  $startDate = $year['start_date_display'] ?? '';
-  $endDate = $year['end_date_display'] ?? '';
+  $startDate = $year['start_date'] ?? '';
+  $endDate = $year['end_date'] ?? '';
   $isActive = !empty($year['is_active']);
 ?>
 
@@ -26,12 +26,12 @@
 
   <div class="grid gap-4 md:grid-cols-2">
     <div>
-      <label class="text-sm text-slate-600">Start Date (dd/mm/yyyy)</label>
-      <input name="start_date" value="<?= htmlspecialchars($startDate) ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+    <label class="text-sm text-slate-600">Start Date</label>
+    <input type="date" name="start_date" value="<?= htmlspecialchars($startDate) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
     <div>
-      <label class="text-sm text-slate-600">End Date (dd/mm/yyyy)</label>
-      <input name="end_date" value="<?= htmlspecialchars($endDate) ?>" placeholder="dd/mm/yyyy" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+    <label class="text-sm text-slate-600">End Date</label>
+    <input type="date" name="end_date" value="<?= htmlspecialchars($endDate) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
   </div>
 

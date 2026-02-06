@@ -12,7 +12,7 @@
       </div>
       <div>
         <label class="text-xs text-slate-500">Session</label>
-        <select name="session_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <select name="session_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($sessions as $session): ?>
             <option value="<?= (int)$session['id'] ?>" <?= (string)$sessionId === (string)$session['id'] ? 'selected' : '' ?>><?= htmlspecialchars($session['name']) ?></option>
@@ -21,7 +21,7 @@
       </div>
       <div>
         <label class="text-xs text-slate-500">Program</label>
-        <select name="program" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <select name="program" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($programs as $p): ?>
             <option value="<?= htmlspecialchars($p['program']) ?>" <?= ($program ?? '') === $p['program'] ? 'selected' : '' ?>><?= htmlspecialchars($p['program']) ?></option>
@@ -30,7 +30,7 @@
       </div>
       <div>
         <label class="text-xs text-slate-500">Class</label>
-        <select name="class_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <select name="class_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($classes as $class): ?>
             <option value="<?= (int)$class['id'] ?>" <?= (string)$classId === (string)$class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['name']) ?></option>
@@ -62,9 +62,16 @@
               </td>
             </tr>
           <?php else: ?>
+            <?php
+              $cleanLabel = function ($value) {
+                $value = trim((string)$value);
+                $value = preg_replace('/_+/', ' ', $value);
+                return trim($value, " _");
+              };
+            ?>
             <?php foreach ($classes as $class): ?>
               <tr class="border-t border-slate-200">
-                <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($class['name']) ?></td>
+                <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($cleanLabel($class['name'])) ?></td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['session_name'] ?? '—') ?></td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['academic_year_label'] ?? '—') ?></td>
                 <td class="px-4 py-3">

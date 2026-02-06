@@ -27,11 +27,11 @@
   <div class="grid gap-4 md:grid-cols-2">
     <div>
       <label class="text-sm text-slate-600">Start Time</label>
-      <input name="start_time" value="<?= htmlspecialchars($startTime) ?>" placeholder="08:30" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <input type="time" name="start_time" value="<?= htmlspecialchars($startTime) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
     <div>
       <label class="text-sm text-slate-600">End Time</label>
-      <input name="end_time" value="<?= htmlspecialchars($endTime) ?>" placeholder="09:45" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <input type="time" name="end_time" value="<?= htmlspecialchars($endTime) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
     </div>
   </div>
 

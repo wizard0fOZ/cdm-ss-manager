@@ -13,7 +13,7 @@
         </div>
         <div>
           <label class="text-xs text-slate-500">Status</label>
-          <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+        <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach (['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'] as $opt): ?>
               <option value="<?= $opt ?>" <?= ($status ?? '') === $opt ? 'selected' : '' ?>><?= $opt ?></option>
@@ -22,7 +22,7 @@
         </div>
         <div>
           <label class="text-xs text-slate-500">Class</label>
-          <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($classes as $class): ?>
               <option value="<?= (int)$class['id'] ?>" <?= (string)($classId ?? '') === (string)$class['id'] ? 'selected' : '' ?>>
@@ -51,13 +51,13 @@
           <option value="set_status">Set Status</option>
           <option value="assign_class">Assign Class</option>
         </select>
-        <select name="status" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <select name="status" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">Status</option>
           <?php foreach (['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'] as $opt): ?>
             <option value="<?= $opt ?>"><?= $opt ?></option>
           <?php endforeach; ?>
         </select>
-        <select name="class_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <select name="class_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">Class</option>
           <?php foreach ($classes as $class): ?>
             <option value="<?= (int)$class['id'] ?>"><?= htmlspecialchars($class['name']) ?></option>

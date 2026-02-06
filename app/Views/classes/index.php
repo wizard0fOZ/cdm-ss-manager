@@ -13,25 +13,25 @@
     <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
       <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['_csrf'] ?? '') ?>">
       <label class="text-xs text-slate-500">Bulk Action</label>
-      <select name="bulk_action" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" required>
+      <select name="bulk_action" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search" required>
         <option value="">Select</option>
         <option value="set_status">Set Status</option>
         <option value="set_session">Set Session</option>
         <option value="set_academic_year">Set Academic Year</option>
       </select>
-      <select name="status" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+      <select name="status" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
         <option value="">Status</option>
         <?php foreach (['DRAFT','ACTIVE','INACTIVE'] as $opt): ?>
           <option value="<?= $opt ?>"><?= $opt ?></option>
         <?php endforeach; ?>
       </select>
-      <select name="session_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+      <select name="session_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
         <option value="">Session</option>
         <?php foreach ($sessions as $session): ?>
           <option value="<?= (int)$session['id'] ?>"><?= htmlspecialchars($session['name']) ?></option>
         <?php endforeach; ?>
       </select>
-      <select name="academic_year_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+      <select name="academic_year_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
         <option value="">Academic Year</option>
         <?php foreach ($years as $year): ?>
           <option value="<?= (int)$year['id'] ?>"><?= htmlspecialchars($year['label']) ?></option>
