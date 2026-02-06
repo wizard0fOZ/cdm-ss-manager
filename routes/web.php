@@ -32,3 +32,4 @@ require dirname(__DIR__) . '/app/Modules/FaithBook/routes.php';
 require dirname(__DIR__) . '/app/Modules/Training/routes.php';
 require dirname(__DIR__) . '/app/Modules/Bulletins/routes.php';
 require dirname(__DIR__) . '/app/Modules/Calendar/routes.php';
+require dirname(__DIR__) . '/app/Modules/Imports/routes.php';

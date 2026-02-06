@@ -23,7 +23,7 @@
     ['label' => 'Announcements', 'icon' => 'M4 12h16M7 6h10M7 18h10', 'href' => '/announcements', 'enabled' => true, 'badge' => $announcementCount],
     ['label' => 'Calendar', 'icon' => 'M6 4h12v3H6zm-2 5h16v11H4z', 'href' => '/calendar', 'enabled' => true],
     ['label' => 'Reports', 'icon' => 'M4 4h6v16H4V4Zm10 6h6v10h-6V10Z', 'href' => '/reports', 'enabled' => false],
-    ['label' => 'Imports', 'icon' => 'M12 3v10m0 0 4-4m-4 4-4-4M5 17h14v4H5v-4Z', 'href' => '/imports', 'enabled' => false],
+    ['label' => 'Imports', 'icon' => 'M12 3v10m0 0 4-4m-4 4-4-4M5 17h14v4H5v-4Z', 'href' => '/imports', 'enabled' => true],
     ['label' => 'Admin', 'icon' => 'M12 4a4 4 0 1 0 0.001 7.999A4 4 0 0 0 12 4Zm-7 14a7 7 0 0 1 14 0v2H5v-2Z', 'href' => '/admin', 'enabled' => false],
   ];
 ?>
