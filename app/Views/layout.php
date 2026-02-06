@@ -38,7 +38,7 @@
   <?php require __DIR__ . '/partials/modal.php'; ?>
 
   <script src="/assets/choices.min.js"></script>
-  <script src="/assets/app.js"></script>
   <?= $pageScripts ?? '' ?>
+  <script src="/assets/app.js"></script>
 </body>
 </html>

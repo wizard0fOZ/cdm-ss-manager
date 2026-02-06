@@ -33,7 +33,7 @@ $mailto = 'mailto:' . $contactEmail;
     <div class="mx-auto max-w-6xl px-4">
       <div class="flex items-center justify-between py-3">
         <div class="flex items-center gap-3">
-          <img src="/assets/media_logo.png" alt="CDM" class="h-9 w-9 rounded-full border border-slate-200 dark:border-slate-700">
+          <img src="/assets/cdm_logo_300dpi.png" alt="CDM" class="h-9 w-9 rounded-full border border-slate-200 dark:border-slate-700">
           <div class="leading-tight">
             <div class="font-extrabold">Church of Divine Mercy</div>
             <div class="text-xs text-slate-600 dark:text-slate-300">Sunday School</div>
@@ -63,6 +63,7 @@ $mailto = 'mailto:' . $contactEmail;
       <nav class="pb-3 text-sm text-slate-700 dark:text-slate-300">
         <div class="flex flex-wrap gap-x-5 gap-y-2">
           <a class="hover:text-slate-900 dark:hover:text-slate-100" href="#about">About</a>
+          <a class="hover:text-slate-900 dark:hover:text-slate-100" href="#announcements">Announcements</a>
           <a class="hover:text-slate-900 dark:hover:text-slate-100" href="#org">Org Chart</a>
           <a class="hover:text-slate-900 dark:hover:text-slate-100" href="#pics">PICs</a>
           <a class="hover:text-slate-900 dark:hover:text-slate-100" href="#contacts">Contacts</a>
@@ -70,6 +71,24 @@ $mailto = 'mailto:' . $contactEmail;
       </nav>
     </div>
   </header>
+
+  <?php if (!empty($announcements)): ?>
+    <section id="announcements" class="fade-in">
+      <div class="mx-auto max-w-6xl px-4 pt-8">
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="text-xs uppercase tracking-wide text-amber-600">Latest Announcement</div>
+              <?php $first = $announcements[0]; ?>
+              <div class="mt-2 text-lg font-semibold text-slate-900"><?= htmlspecialchars($first['title']) ?></div>
+              <div class="mt-1 text-sm text-slate-700"><?= nl2br(htmlspecialchars($first['message'])) ?></div>
+            </div>
+            <a href="/public/announcements" class="shrink-0 rounded-lg border border-amber-200 bg-white px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">View all</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  <?php endif; ?>
 
   <!-- Hero -->
   <section id="about" class="fade-in">
@@ -121,44 +140,6 @@ $mailto = 'mailto:' . $contactEmail;
       </div>
     </div>
   </section>
-
-  <?php if (!empty($announcements)): ?>
-    <section id="announcements" class="fade-in">
-      <div class="mx-auto max-w-6xl px-4 pb-14">
-        <div class="text-center">
-          <h2 class="text-2xl font-extrabold md:text-3xl">Announcements</h2>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Latest updates for families and students.
-          </p>
-        </div>
-
-        <div class="mt-8 grid gap-4 md:grid-cols-2">
-          <?php foreach ($announcements as $announcement): ?>
-            <?php
-              $start = new DateTime($announcement['start_at']);
-              $end = new DateTime($announcement['end_at']);
-              $pinUntil = !empty($announcement['pin_until']) ? new DateTime($announcement['pin_until']) : null;
-              $isPinned = !empty($announcement['is_pinned']) && (!$pinUntil || $pinUntil >= new DateTime('now'));
-            ?>
-            <div class="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/60">
-              <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                <?= htmlspecialchars($start->format('d M Y')) ?> – <?= htmlspecialchars($end->format('d M Y')) ?>
-              </div>
-              <div class="mt-2 flex flex-wrap items-center gap-2 text-lg font-semibold">
-                <span><?= htmlspecialchars($announcement['title']) ?></span>
-                <?php if ($isPinned): ?>
-                  <span class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">Pinned</span>
-                <?php endif; ?>
-              </div>
-              <p class="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                <?= nl2br(htmlspecialchars($announcement['message'])) ?>
-              </p>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      </div>
-    </section>
-  <?php endif; ?>
 
   <!-- Org Chart -->
   <section id="org" class="fade-in">

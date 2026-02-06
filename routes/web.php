@@ -10,6 +10,7 @@ use App\Controllers\PasswordController;
 
 // Public main page
 $router->get('/', [PublicController::class, 'home']);
+$router->get('/public/announcements', [PublicController::class, 'announcements']);
 
 // health + auth
 $router->get('/health', [DashboardController::class, 'health']);

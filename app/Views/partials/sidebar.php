@@ -1,6 +1,14 @@
 <?php
   $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 
+  $announcementCount = 0;
+  try {
+    $pdo = \App\Core\Db\Db::pdo();
+    $announcementCount = (int)$pdo->query("SELECT COUNT(*) FROM announcements WHERE status = 'PUBLISHED' AND start_at <= NOW() AND end_at >= NOW()")->fetchColumn();
+  } catch (\Throwable $e) {
+    $announcementCount = 0;
+  }
+
   $nav = [
     ['label' => 'Dashboard', 'icon' => 'M3 3h18v18H3z', 'href' => '/dashboard', 'enabled' => true],
     ['label' => 'Students', 'icon' => 'M8 8a4 4 0 1 0 0.001 7.999A4 4 0 0 0 8 8Zm8 2a3 3 0 1 0 0.001 5.999A3 3 0 0 0 16 10ZM4 18c0-2.2 1.8-4 4-4s4 1.8 4 4v1H4v-1Zm10 1v-1c0-1.04-.24-2.02-.66-2.88.5-.11 1.03-.16 1.66-.16 2.2 0 4 1.8 4 4v1h-5Z', 'href' => '/students', 'enabled' => true],
@@ -12,7 +20,7 @@
     ['label' => 'Lessons', 'icon' => 'M4 5h7v14H4V5Zm9 0h7v10h-7V5Zm0 12h7v2h-7v-2Z', 'href' => '/lessons', 'enabled' => true],
     ['label' => 'Faith Book', 'icon' => 'M5 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm1 4h8v2H6V8Zm0 4h8v2H6v-2Z', 'href' => '/faith-book', 'enabled' => true],
     ['label' => 'Training', 'icon' => 'M4 6h16v2H4V6Zm2 4h12l-6 6-6-6Z', 'href' => '/training', 'enabled' => true],
-    ['label' => 'Announcements', 'icon' => 'M4 12h16M7 6h10M7 18h10', 'href' => '/announcements', 'enabled' => true],
+    ['label' => 'Announcements', 'icon' => 'M4 12h16M7 6h10M7 18h10', 'href' => '/announcements', 'enabled' => true, 'badge' => $announcementCount],
     ['label' => 'Calendar', 'icon' => 'M6 4h12v3H6zm-2 5h16v11H4z', 'href' => '/calendar', 'enabled' => true],
     ['label' => 'Reports', 'icon' => 'M4 4h6v16H4V4Zm10 6h6v10h-6V10Z', 'href' => '/reports', 'enabled' => false],
     ['label' => 'Imports', 'icon' => 'M12 3v10m0 0 4-4m-4 4-4-4M5 17h14v4H5v-4Z', 'href' => '/imports', 'enabled' => false],
@@ -52,7 +60,9 @@
               <path d="<?= $item['icon'] ?>"></path>
             </svg>
             <span><?= htmlspecialchars($item['label']) ?></span>
-            <?php if ($disabled): ?>
+            <?php if (!empty($item['badge'])): ?>
+              <span class="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600"><?= (int)$item['badge'] ?></span>
+            <?php elseif ($disabled): ?>
               <span class="ml-auto text-[10px] uppercase tracking-wide text-slate-400">Soon</span>
             <?php endif; ?>
           </a>

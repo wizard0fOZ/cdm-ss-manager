@@ -435,7 +435,7 @@ final class CalendarController
       $title = $this->icalEscape($event['title']);
       $desc = $this->icalEscape($event['description'] ?? '');
       $scope = $event['scope'] === 'CLASS' ? ('Class • ' . ($event['class_name'] ?? '')) : 'Global';
-      $desc = trim($desc . ($scope ? \"\\nScope: $scope\" : ''));
+      $desc = trim($desc . ($scope ? "\nScope: $scope" : ''));
 
       $lines[] = 'BEGIN:VEVENT';
       $lines[] = 'UID:' . $uid;
@@ -462,7 +462,7 @@ final class CalendarController
 
     header('Content-Type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename=\"calendar_events.ics\"');
-    echo implode(\"\\r\\n\", $lines);
+    echo implode("\r\n", $lines);
     exit;
   }
 
@@ -699,8 +699,8 @@ final class CalendarController
 
   private function icalEscape(string $value): string
   {
-    $value = str_replace(\"\\r\", '', $value);
-    $value = str_replace(\"\\n\", '\\\\n', $value);
+    $value = str_replace("\r", '', $value);
+    $value = str_replace("\n", '\\n', $value);
     $value = str_replace(',', '\\\\,', $value);
     $value = str_replace(';', '\\\\;', $value);
     return $value;
