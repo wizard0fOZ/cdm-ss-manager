@@ -17,6 +17,37 @@ final class AcademicYearsController
     ]);
   }
 
+  public function bulk(): void
+  {
+    $ids = array_filter(array_map('intval', $_POST['ids'] ?? []));
+    $action = $_POST['bulk_action'] ?? '';
+
+    if (!$ids || $action === '') {
+      (new Response())->redirect('/academic-years');
+      return;
+    }
+
+    if ($action !== 'set_active' || count($ids) !== 1) {
+      (new Response())->redirect('/academic-years');
+      return;
+    }
+
+    $id = $ids[0];
+    $pdo = Db::pdo();
+    $pdo->beginTransaction();
+    try {
+      $pdo->exec('UPDATE academic_years SET is_active = 0');
+      $stmt = $pdo->prepare('UPDATE academic_years SET is_active = 1 WHERE id = ?');
+      $stmt->execute([$id]);
+      $pdo->commit();
+    } catch (\Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    (new Response())->redirect('/academic-years');
+  }
+
   public function create(): void
   {
     (new Response())->view('academic_years/create.php');

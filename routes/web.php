@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Controllers\PublicController;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\PasswordController;
 
 /** @var \App\Core\Http\Router $router */
 
@@ -15,6 +16,8 @@ $router->get('/health', [DashboardController::class, 'health']);
 $router->get('/login',  [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'doLogin'])->middleware('csrf');
 $router->post('/logout',[AuthController::class, 'logout'])->middleware('csrf', 'auth');
+$router->get('/password/change', [PasswordController::class, 'show'])->middleware('auth');
+$router->post('/password/change', [PasswordController::class, 'update'])->middleware('auth', 'csrf');
 
 // protected
 $router->get('/dashboard', [DashboardController::class, 'index'])->middleware('auth');

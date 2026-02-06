@@ -652,6 +652,7 @@ CREATE TABLE `users` (
   `email` varchar(190) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `status` enum('ACTIVE','DISABLED') NOT NULL DEFAULT 'ACTIVE',
+  `must_change_password` tinyint(1) NOT NULL DEFAULT '0',
   `contact_number` varchar(50) DEFAULT NULL,
   `date_joined` date DEFAULT NULL,
   `last_login_at` datetime DEFAULT NULL,

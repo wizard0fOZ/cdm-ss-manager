@@ -42,10 +42,38 @@
       </a>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
+    <form id="bulk-students-form" method="post" action="/students/bulk">
+      <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['_csrf'] ?? '') ?>">
+        <label class="text-xs text-slate-500">Bulk Action</label>
+        <select name="bulk_action" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" required>
+          <option value="">Select</option>
+          <option value="set_status">Set Status</option>
+          <option value="assign_class">Assign Class</option>
+        </select>
+        <select name="status" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+          <option value="">Status</option>
+          <?php foreach (['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'] as $opt): ?>
+            <option value="<?= $opt ?>"><?= $opt ?></option>
+          <?php endforeach; ?>
+        </select>
+        <select name="class_id" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+          <option value="">Class</option>
+          <?php foreach ($classes as $class): ?>
+            <option value="<?= (int)$class['id'] ?>"><?= htmlspecialchars($class['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Apply</button>
+        <span class="text-xs text-slate-400">Select students below.</span>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-slate-200">
       <table class="w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
+            <th class="px-4 py-3">
+              <input type="checkbox" data-select-all class="rounded border-slate-300">
+            </th>
             <th class="px-4 py-3">Student</th>
             <th class="px-4 py-3">Class</th>
             <th class="px-4 py-3">Status</th>
@@ -57,7 +85,7 @@
         <tbody>
           <?php if (empty($students)): ?>
             <tr>
-              <td colspan="6" class="px-4 py-6">
+              <td colspan="7" class="px-4 py-6">
                 <?php $message = 'No students found. Try adjusting filters or add a new student.'; ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
@@ -65,6 +93,9 @@
           <?php else: ?>
             <?php foreach ($students as $student): ?>
               <tr class="border-t border-slate-200">
+                <td class="px-4 py-3">
+                  <input type="checkbox" name="ids[]" value="<?= (int)$student['id'] ?>" class="rounded border-slate-300" data-select-item>
+                </td>
                 <td class="px-4 py-3">
                   <div class="font-semibold text-slate-900"><?= htmlspecialchars($student['full_name'] ?? '') ?></div>
                   <div class="flex flex-wrap gap-2 text-xs text-slate-500">
@@ -91,8 +122,19 @@
           <?php endif; ?>
         </tbody>
       </table>
-    </div>
+      </div>
+    </form>
   </div>
+  <script>
+    (function () {
+      const selectAll = document.querySelector('[data-select-all]');
+      const items = document.querySelectorAll('[data-select-item]');
+      if (!selectAll) return;
+      selectAll.addEventListener('change', () => {
+        items.forEach((item) => { item.checked = selectAll.checked; });
+      });
+    })();
+  </script>
 <?php
   $content = ob_get_clean();
   require __DIR__ . '/../layout.php';

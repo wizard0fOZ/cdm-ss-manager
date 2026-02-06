@@ -11,3 +11,4 @@ $router->post('/students', [StudentsController::class, 'store'])->middleware('au
 $router->get('/students/{id}', [StudentsController::class, 'show'])->middleware('auth');
 $router->get('/students/{id}/edit', [StudentsController::class, 'edit'])->middleware('auth');
 $router->post('/students/{id}', [StudentsController::class, 'update'])->middleware('auth', 'csrf');
+$router->post('/students/bulk', [StudentsController::class, 'bulk'])->middleware('auth', 'csrf');

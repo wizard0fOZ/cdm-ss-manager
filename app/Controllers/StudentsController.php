@@ -67,6 +67,72 @@ final class StudentsController
     ]);
   }
 
+  public function bulk(): void
+  {
+    $ids = array_filter(array_map('intval', $_POST['ids'] ?? []));
+    $action = $_POST['bulk_action'] ?? '';
+
+    if (!$ids || $action === '') {
+      (new Response())->redirect('/students');
+      return;
+    }
+
+    $pdo = Db::pdo();
+
+    if ($action === 'set_status') {
+      $status = $_POST['status'] ?? '';
+      $allowed = ['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'];
+      if (!in_array($status, $allowed, true)) {
+        (new Response())->redirect('/students');
+        return;
+      }
+
+      $in = implode(',', array_fill(0, count($ids), '?'));
+      $stmt = $pdo->prepare(\"UPDATE students SET status=? WHERE id IN ($in)\");
+      $stmt->execute(array_merge([$status], $ids));
+      (new Response())->redirect('/students');
+      return;
+    }
+
+    if ($action === 'assign_class') {
+      $classId = (int)($_POST['class_id'] ?? 0);
+      if ($classId <= 0) {
+        (new Response())->redirect('/students');
+        return;
+      }
+
+      $classStmt = $pdo->prepare('SELECT id, academic_year_id FROM classes WHERE id = ?');
+      $classStmt->execute([$classId]);
+      $class = $classStmt->fetch();
+      if (!$class) {
+        (new Response())->redirect('/students');
+        return;
+      }
+
+      $pdo->beginTransaction();
+      try {
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $pdo->prepare(\"UPDATE student_class_enrollments SET end_date = ? WHERE student_id IN ($in) AND end_date IS NULL\")
+          ->execute(array_merge([date('Y-m-d')], $ids));
+
+        $insert = $pdo->prepare('INSERT INTO student_class_enrollments (student_id, class_id, academic_year_id, start_date) VALUES (?,?,?,?)');
+        foreach ($ids as $studentId) {
+          $insert->execute([$studentId, $class['id'], $class['academic_year_id'] ?? null, date('Y-m-d')]);
+        }
+
+        $pdo->commit();
+      } catch (\Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+      }
+
+      (new Response())->redirect('/students');
+      return;
+    }
+
+    (new Response())->redirect('/students');
+  }
+
   public function create(): void
   {
     $pdo = Db::pdo();

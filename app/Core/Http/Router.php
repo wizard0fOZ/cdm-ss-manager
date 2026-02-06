@@ -204,6 +204,11 @@ final class Router
                 return;
             }
 
+            if (!empty($_SESSION['must_change_password']) && $req->path !== '/password/change' && $req->path !== '/logout') {
+                $res->redirect('/password/change');
+                return;
+            }
+
             $next();
         });
 

@@ -15,10 +15,68 @@ final class ClassesController
   {
     $pdo = Db::pdo();
     $classes = $pdo->query('SELECT c.*, ay.label AS academic_year_label, s.name AS session_name FROM classes c LEFT JOIN academic_years ay ON ay.id = c.academic_year_id LEFT JOIN sessions s ON s.id = c.session_id ORDER BY c.created_at DESC')->fetchAll();
+    $years = $pdo->query('SELECT id, label FROM academic_years ORDER BY start_date DESC')->fetchAll();
+    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY sort_order ASC')->fetchAll();
 
     (new Response())->view('classes/index.php', [
       'classes' => $classes,
+      'years' => $years,
+      'sessions' => $sessions,
     ]);
+  }
+
+  public function bulk(): void
+  {
+    $ids = array_filter(array_map('intval', $_POST['ids'] ?? []));
+    $action = $_POST['bulk_action'] ?? '';
+
+    if (!$ids || $action === '') {
+      (new Response())->redirect('/classes');
+      return;
+    }
+
+    $pdo = Db::pdo();
+
+    if ($action === 'set_status') {
+      $status = $_POST['status'] ?? '';
+      if (!in_array($status, $this->statuses, true)) {
+        (new Response())->redirect('/classes');
+        return;
+      }
+      $in = implode(',', array_fill(0, count($ids), '?'));
+      $stmt = $pdo->prepare(\"UPDATE classes SET status=? WHERE id IN ($in)\");
+      $stmt->execute(array_merge([$status], $ids));
+      (new Response())->redirect('/classes');
+      return;
+    }
+
+    if ($action === 'set_session') {
+      $sessionId = (int)($_POST['session_id'] ?? 0);
+      if ($sessionId <= 0) {
+        (new Response())->redirect('/classes');
+        return;
+      }
+      $in = implode(',', array_fill(0, count($ids), '?'));
+      $stmt = $pdo->prepare(\"UPDATE classes SET session_id=? WHERE id IN ($in)\");
+      $stmt->execute(array_merge([$sessionId], $ids));
+      (new Response())->redirect('/classes');
+      return;
+    }
+
+    if ($action === 'set_academic_year') {
+      $academicYearId = (int)($_POST['academic_year_id'] ?? 0);
+      if ($academicYearId <= 0) {
+        (new Response())->redirect('/classes');
+        return;
+      }
+      $in = implode(',', array_fill(0, count($ids), '?'));
+      $stmt = $pdo->prepare(\"UPDATE classes SET academic_year_id=? WHERE id IN ($in)\");
+      $stmt->execute(array_merge([$academicYearId], $ids));
+      (new Response())->redirect('/classes');
+      return;
+    }
+
+    (new Response())->redirect('/classes');
   }
 
   public function create(): void

@@ -13,6 +13,7 @@ $router->get('/academic-years/create', [AcademicYearsController::class, 'create'
 $router->post('/academic-years', [AcademicYearsController::class, 'store'])->middleware('auth', 'csrf');
 $router->get('/academic-years/{id}/edit', [AcademicYearsController::class, 'edit'])->middleware('auth');
 $router->post('/academic-years/{id}', [AcademicYearsController::class, 'update'])->middleware('auth', 'csrf');
+$router->post('/academic-years/bulk', [AcademicYearsController::class, 'bulk'])->middleware('auth', 'csrf');
 
 $router->get('/terms', [TermsController::class, 'index'])->middleware('auth');
 $router->get('/terms/create', [TermsController::class, 'create'])->middleware('auth');
@@ -31,3 +32,4 @@ $router->get('/classes/create', [ClassesController::class, 'create'])->middlewar
 $router->post('/classes', [ClassesController::class, 'store'])->middleware('auth', 'csrf');
 $router->get('/classes/{id}/edit', [ClassesController::class, 'edit'])->middleware('auth');
 $router->post('/classes/{id}', [ClassesController::class, 'update'])->middleware('auth', 'csrf');
+$router->post('/classes/bulk', [ClassesController::class, 'bulk'])->middleware('auth', 'csrf');
