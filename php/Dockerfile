@@ -8,9 +8,11 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Point Apache docroot to /public
+# Point Apache docroot to /public (safe)
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
- && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+ && sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
 

@@ -3,6 +3,8 @@ namespace App\Core\Http;
 
 final class Request
 {
+  public array $params = [];
+
   public function __construct(
     public readonly string $method,
     public readonly string $path,
@@ -39,6 +41,12 @@ final class Request
   {
     if (array_key_exists($key, $this->post)) return $this->post[$key];
     if (array_key_exists($key, $this->query)) return $this->query[$key];
+    return $default;
+  }
+
+  public function param(string $key, mixed $default = null): mixed
+  {
+    if (array_key_exists($key, $this->params)) return $this->params[$key];
     return $default;
   }
 

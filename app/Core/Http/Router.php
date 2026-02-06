@@ -58,9 +58,12 @@ final class Router
                 continue;
             }
 
-            if ($route->path !== $this->request->path) {
+            $params = [];
+            if (!$this->matchPath($route->path, $this->request->path, $params)) {
                 continue;
             }
+
+            $this->request->params = $params;
 
             // Always run web middleware first
             $middlewareStack = array_merge(['web'], $route->middleware);
@@ -73,6 +76,35 @@ final class Router
         }
 
         $this->response->status(404)->html('404 Not Found');
+    }
+
+    private function matchPath(string $routePath, string $requestPath, array &$params): bool
+    {
+        if ($routePath === $requestPath) {
+            return true;
+        }
+
+        if (!str_contains($routePath, '{')) {
+            return false;
+        }
+
+        $pattern = preg_replace('#\{([a-zA-Z_][a-zA-Z0-9_]*)\}#', '(?P<$1>[^/]+)', $routePath);
+        if (!$pattern) {
+            return false;
+        }
+
+        $pattern = '#^' . $pattern . '$#';
+        if (!preg_match($pattern, $requestPath, $matches)) {
+            return false;
+        }
+
+        foreach ($matches as $key => $value) {
+            if (is_string($key)) {
+                $params[$key] = $value;
+            }
+        }
+
+        return true;
     }
 
     /* ------------------------------------------------------------
@@ -117,7 +149,16 @@ final class Router
         if (is_array($handler)) {
             [$class, $method] = $handler;
             $controller = new $class();
-            $controller->$method();
+            $ref = new \ReflectionMethod($controller, $method);
+            $count = $ref->getNumberOfParameters();
+
+            if ($count >= 2) {
+                $controller->$method($this->request, $this->response);
+            } elseif ($count === 1) {
+                $controller->$method($this->request);
+            } else {
+                $controller->$method();
+            }
             return;
         }
 

@@ -1,0 +1,639 @@
+{
+  "total_rows": 93,
+  "missing_email_count": 67,
+  "missing_phone_count": 3,
+  "missing_email": [
+    {
+      "name": "Yamuna Anthony",
+      "classroom": null,
+      "role_or_group": "Office Admin",
+      "contact_phone": "011 31218286",
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Stella Lawrence",
+      "classroom": null,
+      "role_or_group": "Office Admin",
+      "contact_phone": "012 3581439",
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Callista (new)",
+      "classroom": null,
+      "role_or_group": "Office Admin",
+      "contact_phone": null,
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Jean Khor",
+      "classroom": null,
+      "role_or_group": "Core",
+      "contact_phone": "012 2181358",
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Carol Vanessa",
+      "classroom": null,
+      "role_or_group": "Core",
+      "contact_phone": "016 5330018",
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Alex Thomas",
+      "classroom": null,
+      "role_or_group": "Tamil",
+      "contact_phone": "011 3630 0041",
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Teresa Wong Kwee Yu",
+      "classroom": null,
+      "role_or_group": null,
+      "contact_phone": "012 9083006",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "MANDARIN"
+    },
+    {
+      "name": "Margaret Wong",
+      "classroom": null,
+      "role_or_group": null,
+      "contact_phone": "016 3281290",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "MANDARIN"
+    },
+    {
+      "name": "Peggy Ang",
+      "classroom": null,
+      "role_or_group": null,
+      "contact_phone": "016 9802903",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "MANDARIN"
+    },
+    {
+      "name": "Anna Png",
+      "classroom": "ex Music Room 2",
+      "role_or_group": "RCIC",
+      "contact_phone": "012 3898795",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Felicia Dorothy Roy",
+      "classroom": null,
+      "role_or_group": "RCIC",
+      "contact_phone": "014-3091045",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jane Vijaya Kuma (new)",
+      "classroom": null,
+      "role_or_group": "1 Paul",
+      "contact_phone": "014-3308095",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Cabrini Shaina Raj (new)",
+      "classroom": null,
+      "role_or_group": "2 Paul",
+      "contact_phone": "016-2808821",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Rene Harjit",
+      "classroom": null,
+      "role_or_group": "3 Paul",
+      "contact_phone": "017 6676280",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Krissie Sta Maria (new)",
+      "classroom": null,
+      "role_or_group": "3 Paul",
+      "contact_phone": "012-9061479",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Anne Mary Karmal Lopez",
+      "classroom": "St Joseph 2",
+      "role_or_group": "4 Paul",
+      "contact_phone": "011 28671425",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Angeline Daniel (new)",
+      "classroom": null,
+      "role_or_group": "4 Paul",
+      "contact_phone": "012-3620097",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jerome Donovan (new)",
+      "classroom": null,
+      "role_or_group": "5 Paul",
+      "contact_phone": "018-2707593",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Elijah Immanuel Armash (new)",
+      "classroom": null,
+      "role_or_group": "6 Paul",
+      "contact_phone": "012-6097736",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Linda Jesentha Stanislaus",
+      "classroom": "Old SS Office",
+      "role_or_group": "7 Paul",
+      "contact_phone": "012 2116502",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Darshan Daniel Tharan (new)",
+      "classroom": null,
+      "role_or_group": "7 Paul",
+      "contact_phone": "012-4411737",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Rodrik Anthony",
+      "classroom": "Sacred Heart 2",
+      "role_or_group": "8 Paul",
+      "contact_phone": "016 2533580",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Leslie Than",
+      "classroom": null,
+      "role_or_group": "8 Paul",
+      "contact_phone": "011 11117112",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Rachael Philip (new)",
+      "classroom": null,
+      "role_or_group": "8 Paul",
+      "contact_phone": "019-3131411",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jesudass Paramchotti",
+      "classroom": "Sacred Heart 3",
+      "role_or_group": "9 Paul",
+      "contact_phone": "019 6268553",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Antoinette M Lopez",
+      "classroom": null,
+      "role_or_group": "9 Paul",
+      "contact_phone": "011 72304842",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jason George",
+      "classroom": "Thomas More",
+      "role_or_group": "10 Paul",
+      "contact_phone": "011 51129150",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Peter Toyat (new)",
+      "classroom": null,
+      "role_or_group": "10 Paul",
+      "contact_phone": "017-3402292",
+      "email": null,
+      "section": "SESSION 1 (8.30 - 9.45 AM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Beatrice Ak Richard",
+      "classroom": null,
+      "role_or_group": "KUBM 1",
+      "contact_phone": null,
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Naulli James",
+      "classroom": "john Vianney 1",
+      "role_or_group": "KUBM 2",
+      "contact_phone": "017 635 1228",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Anah Maikon",
+      "classroom": null,
+      "role_or_group": "KUBM 3",
+      "contact_phone": "017 3520250",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Molinih Jipius",
+      "classroom": null,
+      "role_or_group": "KUBM 4",
+      "contact_phone": "019 346 6743",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Viaelnavera Kimin",
+      "classroom": "St Joseph 3",
+      "role_or_group": "KUBM 5",
+      "contact_phone": "016 261 1040",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Natalie Jomolie",
+      "classroom": null,
+      "role_or_group": "KUBM 5",
+      "contact_phone": null,
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Suria Lasius",
+      "classroom": null,
+      "role_or_group": "KUBM 6",
+      "contact_phone": "012 391 1069",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Elvy Brenda",
+      "classroom": "Old SS Office",
+      "role_or_group": "KUBM 7",
+      "contact_phone": "016 6560686",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Julia Purnitha (new)",
+      "classroom": null,
+      "role_or_group": "KUBM 7",
+      "contact_phone": "013-8282939",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Raini Kopoh",
+      "classroom": "Sacred Heart 2",
+      "role_or_group": "KUBM 8",
+      "contact_phone": "019 399 6679",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Nirwana Binti Mahmun (NEW)",
+      "classroom": null,
+      "role_or_group": "KUBM 8",
+      "contact_phone": "014 655 7319",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Deborah Belawan",
+      "classroom": null,
+      "role_or_group": "KUBM 9",
+      "contact_phone": "012 258 0130",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Crisslyn Lavang",
+      "classroom": "Thomas More",
+      "role_or_group": "KUBM 10",
+      "contact_phone": "017 807 2966",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Valeire Nozie",
+      "classroom": null,
+      "role_or_group": "KUBM 10",
+      "contact_phone": "016 369 0559",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Crisslyn Lavang",
+      "classroom": "Ex Music Room",
+      "role_or_group": "KUBM 11",
+      "contact_phone": "017 807 2966",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Valeire Nozie",
+      "classroom": null,
+      "role_or_group": null,
+      "contact_phone": "016 369 0559",
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Patricia Alex",
+      "classroom": "Library",
+      "role_or_group": null,
+      "contact_phone": "012 643 1929",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "TAMIL"
+    },
+    {
+      "name": "Alex Thomas",
+      "classroom": null,
+      "role_or_group": null,
+      "contact_phone": "011 3630 0041",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "TAMIL"
+    },
+    {
+      "name": "Daniel Aidan Soosay (new)",
+      "classroom": null,
+      "role_or_group": "1 Peter",
+      "contact_phone": "014-9438208",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Felicia Francis",
+      "classroom": "John Vianney 1",
+      "role_or_group": "2 Peter",
+      "contact_phone": "016 4229716",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Faustina Agnes Ong Yeen Yeen (n",
+      "classroom": "ew)",
+      "role_or_group": "2 Peter",
+      "contact_phone": "019-8153333",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Aileen Francis",
+      "classroom": "St Joseph 1",
+      "role_or_group": "3 Peter",
+      "contact_phone": "016 9097847",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Rebecca Subramaniam (new)",
+      "classroom": null,
+      "role_or_group": "3 Peter",
+      "contact_phone": "017-8231987",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Shanessa Simon (new)",
+      "classroom": null,
+      "role_or_group": "4 Peter",
+      "contact_phone": "018-3868495",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Sharon Lim",
+      "classroom": null,
+      "role_or_group": "5 Peter",
+      "contact_phone": "019 2116239",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Birgitta Abeysekra (new)",
+      "classroom": null,
+      "role_or_group": "5 Peter",
+      "contact_phone": "016-9884920",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Sean Peter Michael Goh (new)",
+      "classroom": null,
+      "role_or_group": "6 Peter",
+      "contact_phone": "012-6389307",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Kevin Kennedy",
+      "classroom": "Old SS Office",
+      "role_or_group": "7 Peter",
+      "contact_phone": "016 2529731",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jesslynn Jeffrey (new)",
+      "classroom": null,
+      "role_or_group": "7 Peter",
+      "contact_phone": "017-3505894",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Caroline Nirmala",
+      "classroom": null,
+      "role_or_group": "7 Peter",
+      "contact_phone": "016 6631907",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Jonathan Michael",
+      "classroom": null,
+      "role_or_group": "8 Peter",
+      "contact_phone": "018 3164877",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Lydia Gomez (new)",
+      "classroom": null,
+      "role_or_group": "8 Peter",
+      "contact_phone": "016-2206682",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Clement Lopez",
+      "classroom": "Sacred Heart 3",
+      "role_or_group": "9 Peter",
+      "contact_phone": "012 3771453",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Sabrina Thaddeus",
+      "classroom": null,
+      "role_or_group": "9 Peter",
+      "contact_phone": "010-4387745",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Dr Anita Pelly",
+      "classroom": "Thomas More",
+      "role_or_group": "10 Peter",
+      "contact_phone": "012 3075730",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Tom Martin",
+      "classroom": null,
+      "role_or_group": "Confirmands Class",
+      "contact_phone": "016 3443146",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Justin Lam",
+      "classroom": null,
+      "role_or_group": "Confirmands Class",
+      "contact_phone": "017 6050976",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Casey Sathasivam",
+      "classroom": null,
+      "role_or_group": "Confirmands Class",
+      "contact_phone": "017 3089265",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    },
+    {
+      "name": "Caroline Nirmala",
+      "classroom": null,
+      "role_or_group": "Confirmands Class",
+      "contact_phone": "016 6631907",
+      "email": null,
+      "section": "SESSION 3 (11.30 - 12.45 PM)",
+      "program": "ENGLISH"
+    }
+  ],
+  "missing_phone": [
+    {
+      "name": "Callista (new)",
+      "classroom": null,
+      "role_or_group": "Office Admin",
+      "contact_phone": null,
+      "email": null,
+      "section": "CORE TEAM",
+      "program": null
+    },
+    {
+      "name": "Beatrice Ak Richard",
+      "classroom": null,
+      "role_or_group": "KUBM 1",
+      "contact_phone": null,
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    },
+    {
+      "name": "Natalie Jomolie",
+      "classroom": null,
+      "role_or_group": "KUBM 5",
+      "contact_phone": null,
+      "email": null,
+      "section": "SESSION 2 (10.00am to 11.15am)",
+      "program": "KUBM"
+    }
+  ]
+}
