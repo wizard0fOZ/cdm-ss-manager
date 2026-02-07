@@ -1,4 +1,10 @@
-<?php $csrf = $_SESSION['_csrf'] ?? ''; ?>
+<?php
+  $csrf = $_SESSION['_csrf'] ?? '';
+  $flash = null;
+  if (class_exists('App\\Core\\Support\\Flash')) {
+    $flash = \App\Core\Support\Flash::get();
+  }
+?>
 <!doctype html>
 <html>
 <head>
@@ -16,6 +22,11 @@
       <?php if (!empty($error)): ?>
         <div class="mt-4 rounded-lg bg-red-50 text-red-700 p-3 text-sm">
           <?= htmlspecialchars($error) ?>
+        </div>
+      <?php endif; ?>
+      <?php if (!empty($flash)): ?>
+        <div class="mt-4 rounded-lg bg-amber-50 text-amber-800 p-3 text-sm">
+          <?= htmlspecialchars($flash['message'] ?? '') ?>
         </div>
       <?php endif; ?>
 

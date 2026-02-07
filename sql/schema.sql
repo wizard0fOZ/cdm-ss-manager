@@ -254,6 +254,22 @@ CREATE TABLE `lesson_plans` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+DROP TABLE IF EXISTS `login_attempts`;
+CREATE TABLE `login_attempts` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `email` varchar(190) NOT NULL,
+  `ip_address` varchar(64) NOT NULL,
+  `attempts` int unsigned NOT NULL DEFAULT '0',
+  `last_attempt_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `locked_until` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_login_attempts_email_ip` (`email`,`ip_address`),
+  KEY `idx_login_attempts_locked` (`locked_until`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 DROP TABLE IF EXISTS `password_resets`;
 CREATE TABLE `password_resets` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,

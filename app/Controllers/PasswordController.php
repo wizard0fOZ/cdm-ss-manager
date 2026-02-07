@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
+use App\Core\Audit\Audit;
 
 final class PasswordController
 {
@@ -29,6 +30,7 @@ final class PasswordController
         $pdo->prepare('INSERT INTO password_resets (user_id, token, expires_at) VALUES (?,?,?)')
           ->execute([$userId, $token, $expiresAt]);
         $resetLink = '/password/reset?token=' . urlencode($token);
+        Audit::logWithActor($userId, 'auth.password.reset_request', 'users', (string)$userId, null, ['via' => 'self']);
       }
     }
 
@@ -89,6 +91,7 @@ final class PasswordController
       $pdo->prepare('UPDATE users SET password_hash=?, must_change_password=0 WHERE id=?')->execute([$hash, (int)$row['user_id']]);
       $pdo->prepare('UPDATE password_resets SET used_at = NOW() WHERE token = ?')->execute([$token]);
       $pdo->commit();
+      Audit::logWithActor((int)$row['user_id'], 'auth.password.reset_success', 'users', (string)$row['user_id'], null, ['via' => 'self']);
     } catch (\Throwable $e) {
       $pdo->rollBack();
       throw $e;

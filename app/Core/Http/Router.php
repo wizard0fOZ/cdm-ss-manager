@@ -67,6 +67,9 @@ final class Router
 
             // Always run web middleware first
             $middlewareStack = array_merge(['web'], $route->middleware);
+            if ($this->request->method === 'POST' && !in_array('csrf', $middlewareStack, true)) {
+                $middlewareStack[] = 'csrf';
+            }
 
             $this->runMiddlewareStack($middlewareStack, function () use ($route) {
                 $this->runHandler($route->handler);
@@ -192,6 +195,27 @@ final class Router
 
             if (empty($_SESSION['_csrf'])) {
                 $_SESSION['_csrf'] = bin2hex(random_bytes(32));
+            }
+
+            // Security headers (baseline)
+            header('X-Frame-Options: DENY');
+            header('X-Content-Type-Options: nosniff');
+            header('Referrer-Policy: no-referrer');
+            header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+            header("Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+
+            // Session idle timeout (1 hour)
+            $timeout = 60 * 60;
+            $now = time();
+            if (!empty($_SESSION['user_id'])) {
+                $last = (int)($_SESSION['_last_activity'] ?? 0);
+                if ($last > 0 && ($now - $last) > $timeout) {
+                    \App\Core\Support\Flash::set('error', 'Session expired. Please sign in again.');
+                    \App\Core\Auth\Auth::logout();
+                    $res->redirect('/login');
+                    return;
+                }
+                $_SESSION['_last_activity'] = $now;
             }
 
             // Maintenance mode (system_settings: maintenance_mode, maintenance_message)

@@ -20,8 +20,13 @@ final class Auth
     if (!password_verify($password, $u['password_hash'])) return false;
 
     // session
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+      session_start();
+    }
+    session_regenerate_id(true);
     $_SESSION['user_id'] = (int)$u['id'];
     $_SESSION['must_change_password'] = (int)($u['must_change_password'] ?? 0) === 1;
+    $_SESSION['_last_activity'] = time();
 
     // update last_login_at (nice-to-have)
     $pdo->prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?")->execute([$_SESSION['user_id']]);

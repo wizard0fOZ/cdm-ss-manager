@@ -9,7 +9,12 @@ final class Audit
   {
     $actorId = (int)($_SESSION['user_id'] ?? 0);
     if ($actorId <= 0) return;
+    self::logWithActor($actorId, $action, $entityType, $entityId, $before, $after);
+  }
 
+  public static function logWithActor(int $actorId, string $action, string $entityType, string $entityId, ?array $before = null, ?array $after = null): void
+  {
+    if ($actorId <= 0) return;
     $ip = $_SERVER['REMOTE_ADDR'] ?? null;
     $agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
     $pdo = Db::pdo();
