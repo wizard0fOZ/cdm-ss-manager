@@ -24,10 +24,10 @@
   <?php endif; ?>
       </div>
       <div class="flex items-center gap-2">
-        <a href="/faith-book/<?= (int)$student['id'] ?>/create" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Add Entry</a>
-        <a href="/faith-book/<?= (int)$student['id'] ?>/pdf" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Download PDF</a>
-        <a href="/faith-book/<?= (int)$student['id'] ?>/print" class="rounded-xl border border-slate-200 px-4 py-2 text-sm" target="_blank" rel="noreferrer">Print</a>
-        <a href="/faith-book/<?= (int)$student['id'] ?>/export" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Export CSV</a>
+        <a href="/faith-book/<?= (int)$student['id'] ?>/create" class="btn btn-primary">Add Entry</a>
+        <a href="/faith-book/<?= (int)$student['id'] ?>/pdf" class="btn btn-secondary">Download PDF</a>
+        <a href="/faith-book/<?= (int)$student['id'] ?>/print" class="btn btn-secondary" target="_blank" rel="noreferrer">Print</a>
+        <a href="/faith-book/<?= (int)$student['id'] ?>/export" class="btn btn-secondary">Export CSV</a>
       </div>
     </div>
 

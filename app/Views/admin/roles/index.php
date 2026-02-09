@@ -21,7 +21,7 @@
         <input type="hidden" name="role_id" value="<?= (int)$role['id'] ?>">
         <div class="flex items-center justify-between gap-3">
           <div class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($role['name']) ?> <span class="text-xs text-slate-500">(<?= htmlspecialchars($role['code']) ?>)</span></div>
-          <button class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Save</button>
+          <button class="btn btn-secondary btn-xs">Save</button>
         </div>
         <div class="mt-3 grid gap-4">
           <?php foreach ($grouped as $module => $modulePerms): ?>
@@ -33,7 +33,7 @@
                     <input type="checkbox" data-select-all="<?= htmlspecialchars($module) ?>">
                     Select all
                   </label>
-                  <button type="button" class="rounded-lg border border-slate-200 px-2 py-0.5 text-xs text-slate-600" data-select-none="<?= htmlspecialchars($module) ?>">
+                  <button type="button" class="btn btn-secondary btn-xs" data-select-none="<?= htmlspecialchars($module) ?>">
                     Select none
                   </button>
                 </div>

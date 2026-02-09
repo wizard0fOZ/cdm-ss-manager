@@ -7,7 +7,7 @@ use App\Core\Http\Request;
 use App\Core\Support\Flash;
 use Dompdf\Dompdf;
 
-final class FaithBookController
+final class FaithBookController extends BaseController
 {
   private array $types = ['NOTE','ACHIEVEMENT','DISCIPLINE','OTHER'];
 
@@ -332,45 +332,6 @@ final class FaithBookController
     $stmt = $pdo->prepare('SELECT 1 FROM student_class_enrollments sce JOIN class_teacher_assignments cta ON cta.class_id = sce.class_id WHERE sce.student_id = ? AND cta.user_id = ? AND sce.end_date IS NULL AND (cta.end_date IS NULL OR cta.end_date >= CURDATE()) LIMIT 1');
     $stmt->execute([$studentId, $userId]);
     return (bool)$stmt->fetchColumn();
-  }
-
-  private function isStaffAdmin(int $userId): bool
-  {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
-    }
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return $value;
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-
-    return null;
-  }
-
-  private function normalizeDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return $value;
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-
-    return null;
   }
 
   private function safeFilename(string $value): string

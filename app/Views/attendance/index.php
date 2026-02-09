@@ -5,14 +5,14 @@
   ob_start();
 ?>
   <div class="flex flex-col gap-4">
-    <form method="get" class="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <form method="get" class="filter-bar flex flex-wrap items-end gap-3">
       <div>
-        <label class="text-xs text-slate-500">Date</label>
-        <input type="date" name="date" value="<?= htmlspecialchars($date) ?>" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <label class="section-label">Date</label>
+        <input type="date" name="date" value="<?= htmlspecialchars($date) ?>" class="mt-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm">
       </div>
       <div>
-        <label class="text-xs text-slate-500">Session</label>
-        <select name="session_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Session</label>
+        <select name="session_id" class="mt-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($sessions as $session): ?>
             <option value="<?= (int)$session['id'] ?>" <?= (string)$sessionId === (string)$session['id'] ? 'selected' : '' ?>><?= htmlspecialchars($session['name']) ?></option>
@@ -20,8 +20,8 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Program</label>
-        <select name="program" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Program</label>
+        <select name="program" class="mt-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($programs as $p): ?>
             <option value="<?= htmlspecialchars($p['program']) ?>" <?= ($program ?? '') === $p['program'] ? 'selected' : '' ?>><?= htmlspecialchars($p['program']) ?></option>
@@ -29,21 +29,23 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Class</label>
-        <select name="class_id" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Class</label>
+        <select name="class_id" class="mt-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($classes as $class): ?>
             <option value="<?= (int)$class['id'] ?>" <?= (string)$classId === (string)$class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['name']) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
-      <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Load</button>
-      <a href="/attendance" class="rounded-lg border border-slate-200 px-4 py-2 text-sm">Reset</a>
+      <div class="flex items-end gap-2">
+        <button class="btn btn-primary btn-sm">Load</button>
+        <a href="/attendance" class="btn btn-secondary btn-sm">Reset</a>
+      </div>
       <span class="text-xs text-slate-400">Sunday locks at 11:59pm.</span>
     </form>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Class</th>
@@ -92,13 +94,13 @@
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($class['academic_year_label'] ?? '—') ?></td>
                 <td class="px-4 py-3">
                   <?php if (!empty($class['is_locked_display'])): ?>
-                    <span class="rounded-full bg-rose-100 px-3 py-1 text-xs text-rose-700">Locked</span>
+                    <span class="badge badge-danger">Locked</span>
                   <?php else: ?>
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700">Open</span>
+                    <span class="badge badge-success">Open</span>
                   <?php endif; ?>
                 </td>
                 <td class="px-4 py-3">
-                  <a href="/attendance/<?= (int)$class['id'] ?>?date=<?= htmlspecialchars($date) ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Mark</a>
+                  <a href="/attendance/<?= (int)$class['id'] ?>?date=<?= htmlspecialchars($date) ?>" class="btn btn-secondary btn-xs">Mark</a>
                 </td>
               </tr>
             <?php endforeach; ?>

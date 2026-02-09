@@ -1,5 +1,5 @@
 <?php
-$contactEmail = $contactEmail ?? 'catechetical@divinemercy.my';
+$contactEmail = $contactEmail ?? 'catechetical@divinmercy.my';
 $mailto = 'mailto:' . $contactEmail;
 $whatsapp = $whatsapp ?? '';
 $waNumber = preg_replace('/\D+/', '', $whatsapp);
@@ -18,6 +18,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/app.css">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -69,7 +70,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
 
         <div class="flex items-center gap-2">
           <button
-            class="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
+            class="btn btn-secondary btn-icon dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
             @click="toggleTheme()"
             type="button"
             aria-label="Toggle dark mode"
@@ -78,7 +79,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
           </button>
           <a
             href="<?= htmlspecialchars($mailto) ?>"
-            class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+            class="btn btn-primary dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
           >
             <i class="fa-regular fa-envelope"></i>
             Email
@@ -86,7 +87,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
           <?php if ($waLink !== ''): ?>
             <a
               href="<?= htmlspecialchars($waLink) ?>"
-              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
             >
               <i class="fa-brands fa-whatsapp"></i>
               WhatsApp
@@ -116,12 +117,12 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
           <h1 class="mt-5 font-display text-4xl font-extrabold tracking-tight md:text-6xl">Forming Disciples, Rooted in the Gospel</h1>
           <p class="mt-4 text-base text-slate-700 dark:text-slate-300">We walk with children and teens in catechesis, prayer, and community life across English, KUBM, Mandarin, Tamil, and RCIC programs.</p>
           <div class="mt-6 flex flex-wrap gap-3">
-            <a href="<?= htmlspecialchars($mailto) ?>" class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+            <a href="<?= htmlspecialchars($mailto) ?>" class="btn btn-primary dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
               <i class="fa-regular fa-envelope"></i>
               Email Us
             </a>
             <?php if ($waLink !== ''): ?>
-              <a href="<?= htmlspecialchars($waLink) ?>" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
+              <a href="<?= htmlspecialchars($waLink) ?>" class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
                 <i class="fa-brands fa-whatsapp"></i>
                 WhatsApp Us
               </a>
@@ -157,7 +158,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
           <h2 class="font-display text-2xl font-bold">Announcements</h2>
           <p class="text-sm text-slate-600 dark:text-slate-300">Latest updates for families and catechists.</p>
         </div>
-        <a href="/public/announcements" class="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-700">View all</a>
+        <a href="/public/announcements" class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">View all</a>
       </div>
       <div class="mt-6 grid gap-4 md:grid-cols-3">
         <?php if (empty($announcements)): ?>
@@ -183,7 +184,7 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
             <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">Next 2 Weeks</div>
             <h3 class="font-display text-xl font-bold">Calendar Highlights</h3>
           </div>
-          <a href="/public/calendar" class="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-700">Open full calendar</a>
+          <a href="/public/calendar" class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Open full calendar</a>
         </div>
         <div class="mt-5 grid gap-3 md:grid-cols-2">
           <?php if (empty($events)): ?>
@@ -315,12 +316,12 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
             <div class="mt-3 text-sm text-slate-700 dark:text-slate-300"><?= htmlspecialchars($c['desc']) ?></div>
 
             <div class="mt-5 flex flex-wrap gap-2">
-              <a class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700" href="<?= htmlspecialchars('mailto:' . $c['email']) ?>">
+              <a class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" href="<?= htmlspecialchars('mailto:' . $c['email']) ?>">
                 <i class="fa-regular fa-envelope"></i>
                 Email
               </a>
               <?php if ($waLink !== ''): ?>
-                <a class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700" href="<?= htmlspecialchars($waLink) ?>">
+                <a class="btn btn-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" href="<?= htmlspecialchars($waLink) ?>">
                   <i class="fa-brands fa-whatsapp"></i>
                   WhatsApp
                 </a>
@@ -338,12 +339,12 @@ $waLink = $waNumber !== '' ? ('https://wa.me/' . $waNumber) : '';
         <h3 class="font-display text-2xl font-extrabold">Have Questions?</h3>
         <p class="mx-auto mt-2 max-w-2xl text-slate-200">Whether you want to enrol your child or join the team of catechists, we’d love to hear from you.</p>
         <div class="mt-6 flex flex-wrap justify-center gap-3">
-          <a href="<?= htmlspecialchars($mailto) ?>" class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">
+          <a href="<?= htmlspecialchars($mailto) ?>" class="btn btn-secondary">
             <i class="fa-regular fa-envelope"></i>
             Email Us Today
           </a>
           <?php if ($waLink !== ''): ?>
-            <a href="<?= htmlspecialchars($waLink) ?>" class="inline-flex items-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10">
+            <a href="<?= htmlspecialchars($waLink) ?>" class="btn btn-ghost border border-white/30 text-white hover:bg-white/10">
               <i class="fa-brands fa-whatsapp"></i>
               WhatsApp
             </a>

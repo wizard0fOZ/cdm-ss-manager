@@ -6,7 +6,7 @@ use App\Core\Http\Response;
 use App\Core\Http\Request;
 use Dompdf\Dompdf;
 
-final class ReportsController
+final class ReportsController extends BaseController
 {
   private array $types = [
     'attendance_class' => 'Attendance (by Class)',
@@ -231,15 +231,6 @@ final class ReportsController
       return $this->classList($pdo, $filters);
     }
     return ['title' => 'Report', 'rows' => []];
-  }
-
-  private function normalizeDate(string $date): ?string
-  {
-    $date = trim($date);
-    if ($date === '') return null;
-    $d = \DateTime::createFromFormat('Y-m-d', $date);
-    if (!$d) return null;
-    return $d->format('Y-m-d');
   }
 
   private function mapReportCell(string $type, string $header, array $row): string
@@ -523,22 +514,9 @@ final class ReportsController
     ];
   }
 
-  private function isStaffAdmin(int $userId): bool
-  {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
-    }
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
   private function renderView(string $view, array $data): string
   {
-    extract($data);
+    extract($data, EXTR_SKIP);
     ob_start();
     require __DIR__ . '/../Views/' . $view;
     return ob_get_clean();

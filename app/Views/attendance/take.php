@@ -8,6 +8,7 @@
   $pageTitle = 'Attendance - ' . $className;
   $pageSubtitle = 'Date: ' . htmlspecialchars($date);
   $csrf = $_SESSION['_csrf'] ?? '';
+  $canEdit = !($isLocked && !$isAdmin);
 
   $statuses = ['' => 'Unmarked', 'PRESENT' => 'Present', 'ABSENT' => 'Absent', 'LATE' => 'Late', 'EXCUSED' => 'Excused'];
   $reasons = ['' => 'Reason', 'SICK' => 'Sick', 'FAMILY' => 'Family', 'TRAVEL' => 'Travel', 'OTHER' => 'Other'];
@@ -35,16 +36,16 @@
         <?php endif; ?>
       </div>
       <div class="flex items-center gap-2">
-        <a href="/attendance?date=<?= htmlspecialchars($date) ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Back</a>
+      <a href="/attendance?date=<?= htmlspecialchars($date) ?>" class="btn btn-secondary btn-xs">Back</a>
         <?php if ($isAdmin && !$isLocked): ?>
           <form method="post" action="/attendance/<?= (int)$class['id'] ?>/lock?date=<?= htmlspecialchars($date) ?>">
             <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-            <button class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Lock Now</button>
+            <button class="btn btn-secondary btn-xs">Lock Now</button>
           </form>
         <?php elseif ($isAdmin && $isLocked): ?>
           <form method="post" action="/attendance/<?= (int)$class['id'] ?>/unlock?date=<?= htmlspecialchars($date) ?>">
             <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-            <button class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Unlock</button>
+            <button class="btn btn-secondary btn-xs">Unlock</button>
           </form>
         <?php endif; ?>
       </div>
@@ -68,9 +69,9 @@
       <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
 
       <div class="flex flex-wrap items-center gap-2">
-        <button type="button" class="rounded-lg border border-slate-200 px-3 py-1 text-xs" data-mark-all="PRESENT">Mark All Present</button>
-        <button type="button" class="rounded-lg border border-slate-200 px-3 py-1 text-xs" data-mark-all="ABSENT">Mark All Absent</button>
-        <button type="button" class="rounded-lg border border-slate-200 px-3 py-1 text-xs" data-mark-all="">Clear All</button>
+        <button type="button" class="btn btn-secondary btn-xs" data-mark-all="PRESENT">Mark All Present</button>
+        <button type="button" class="btn btn-secondary btn-xs" data-mark-all="ABSENT">Mark All Absent</button>
+        <button type="button" class="btn btn-secondary btn-xs" data-mark-all="">Clear All</button>
         <span class="text-xs text-slate-400">Late can include a reason/note.</span>
       </div>
 
@@ -82,8 +83,8 @@
         <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">Unmarked: <span data-count="UNMARKED">0</span></span>
       </div>
 
-      <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-        <table class="w-full text-left text-sm">
+      <div class="mt-4 table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="cdm-table w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th class="px-4 py-3">Student</th>
@@ -107,21 +108,37 @@
                 <tr class="border-t border-slate-200">
                   <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($student['full_name']) ?></td>
                   <td class="px-4 py-3">
-                    <select name="status[<?= (int)$student['id'] ?>]" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" <?= $isLocked && !$isAdmin ? 'disabled' : '' ?> data-status>
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                    <input type="hidden" name="student_id" value="<?= (int)$student['id'] ?>">
+                    <select name="status[<?= (int)$student['id'] ?>]"
+                            class="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            <?= $canEdit ? '' : 'disabled' ?>
+                            data-status
+                            <?= $canEdit ? 'hx-post="/attendance/' . (int)$class['id'] . '/mark?date=' . htmlspecialchars($date) . '" hx-include="closest tr" hx-trigger="change delay:200ms" hx-target="#attendance-save-' . (int)$student['id'] . '" hx-swap="outerHTML"' : '' ?>>
                       <?php foreach ($statuses as $value => $label): ?>
                         <option value="<?= $value ?>" <?= ($record['status'] ?? '') === $value ? 'selected' : '' ?>><?= $label ?></option>
                       <?php endforeach; ?>
                     </select>
                   </td>
                   <td class="px-4 py-3">
-                    <select name="reason[<?= (int)$student['id'] ?>]" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" <?= $isLocked && !$isAdmin ? 'disabled' : '' ?> data-reason>
+                    <select name="reason[<?= (int)$student['id'] ?>]"
+                            class="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            <?= $canEdit ? '' : 'disabled' ?>
+                            data-reason
+                            <?= $canEdit ? 'hx-post="/attendance/' . (int)$class['id'] . '/mark?date=' . htmlspecialchars($date) . '" hx-include="closest tr" hx-trigger="change delay:200ms" hx-target="#attendance-save-' . (int)$student['id'] . '" hx-swap="outerHTML"' : '' ?>>
                       <?php foreach ($reasons as $value => $label): ?>
                         <option value="<?= $value ?>" <?= ($record['absence_reason'] ?? '') === $value ? 'selected' : '' ?>><?= $label ?></option>
                       <?php endforeach; ?>
                     </select>
                   </td>
                   <td class="px-4 py-3">
-                    <input name="note[<?= (int)$student['id'] ?>]" value="<?= htmlspecialchars($record['note'] ?? $record['absence_note'] ?? '') ?>" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Optional" <?= $isLocked && !$isAdmin ? 'disabled' : '' ?>>
+                    <input name="note[<?= (int)$student['id'] ?>]"
+                           value="<?= htmlspecialchars($record['note'] ?? $record['absence_note'] ?? '') ?>"
+                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                           placeholder="Optional"
+                           <?= $canEdit ? '' : 'disabled' ?>
+                           <?= $canEdit ? 'hx-post="/attendance/' . (int)$class['id'] . '/mark?date=' . htmlspecialchars($date) . '" hx-include="closest tr" hx-trigger="keyup changed delay:600ms" hx-target="#attendance-save-' . (int)$student['id'] . '" hx-swap="outerHTML"' : '' ?>>
+                    <div class="mt-1 text-xs text-slate-400" id="attendance-save-<?= (int)$student['id'] ?>"></div>
                   </td>
                 </tr>
               <?php endforeach; ?>
@@ -131,10 +148,10 @@
       </div>
 
       <div class="mt-4 flex items-center gap-3">
-        <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit" <?= $isLocked && !$isAdmin ? 'disabled' : '' ?>>
+        <button class="btn btn-primary" type="submit" <?= $canEdit ? '' : 'disabled' ?>>
           Save Attendance
         </button>
-        <a href="/attendance?date=<?= htmlspecialchars($date) ?>" class="text-sm text-slate-600">Cancel</a>
+        <a href="/attendance?date=<?= htmlspecialchars($date) ?>" class="btn btn-ghost btn-sm">Cancel</a>
       </div>
     </form>
   </div>

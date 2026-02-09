@@ -5,13 +5,12 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
-use App\Core\Rbac\Rbac;
 use App\Core\Audit\Audit;
+use App\Core\Support\Env;
 
-final class ImportsController
+final class ImportsController extends BaseController
 {
   private array $types = ['STUDENTS','TEACHERS','CLASSES'];
-  private string $defaultPassword = 'CDM2026!';
 
   public function index(): void
   {
@@ -116,6 +115,38 @@ final class ImportsController
         'default_class_id' => (int)($_POST['default_class_id'] ?? 0),
         'default_session_id' => (int)($_POST['default_session_id'] ?? 0),
       ],
+    ]);
+  }
+
+  public function previewPartial(Request $request): void
+  {
+    if (!$this->guard('imports.run')) return;
+    $type = strtoupper(trim($_POST['job_type'] ?? ''));
+    $storedPath = $this->sanitizeStoredPath($_POST['stored_path'] ?? '');
+    $mapping = [];
+    if (!empty($_POST['mapping_json'])) {
+      $decoded = json_decode((string)$_POST['mapping_json'], true);
+      if (is_array($decoded)) $mapping = $decoded;
+    }
+
+    if (!in_array($type, $this->types, true) || $storedPath === '' || !is_file($storedPath)) {
+      (new Response())->status(400)->html('Invalid preview request.');
+      return;
+    }
+
+    $preview = $this->buildPreviewWithMapping($type, $storedPath, $mapping);
+    $summary = $this->buildImportSummary($type, $storedPath, $mapping);
+    $requiredIssues = $this->validateCsvRequireds($type, $storedPath, $mapping);
+    $missingRequired = ($requiredIssues['missing'] ?? 0) > 0;
+    $isSysAdmin = $this->isSysAdmin((int)($_SESSION['user_id'] ?? 0));
+
+    (new Response())->view('imports/_preview_dynamic.php', [
+      'mapping' => $preview['mapping'],
+      'rows' => $preview['rows'],
+      'rowIssues' => $preview['row_issues'],
+      'summary' => $summary,
+      'missingRequired' => $missingRequired,
+      'isSysAdmin' => $isSysAdmin,
     ]);
   }
 
@@ -476,7 +507,7 @@ final class ImportsController
         $userIdRow = (int)$existing;
       } else {
         if (!$dryRun) {
-          $hash = password_hash($this->defaultPassword, PASSWORD_DEFAULT);
+          $hash = password_hash($this->defaultPassword(), PASSWORD_DEFAULT);
           $stmt = $pdo->prepare('INSERT INTO users (full_name, email, password_hash, status, must_change_password) VALUES (?,?,?,?,?)');
           $stmt->execute([$name, $email, $hash, 'ACTIVE', 1]);
           $userIdRow = (int)$pdo->lastInsertId();
@@ -593,17 +624,6 @@ final class ImportsController
       $payload[$key] = $row[$idx] ?? '';
     }
     return $payload;
-  }
-
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-    if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $value)) return $value;
-    if (preg_match('/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-    return null;
   }
 
   private function buildPreview(string $type, string $path): array
@@ -835,13 +855,14 @@ final class ImportsController
     return ['missing' => $missingCount];
   }
 
-  private function isSysAdmin(int $userId): bool
+  private function defaultPassword(): string
   {
-    if ($userId <= 0) return false;
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code = ? LIMIT 1');
-    $stmt->execute([$userId, 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
+    $password = (string)Env::get('IMPORT_DEFAULT_PASSWORD', '');
+    if ($password === '') {
+      $password = (string)Env::get('DEFAULT_USER_PASSWORD', '');
+    }
+    if ($password !== '') return $password;
+    return bin2hex(random_bytes(8));
   }
 
   private function verifyPassword(int $userId, string $password): bool
@@ -869,20 +890,5 @@ final class ImportsController
   {
     $stmt = $pdo->query('SELECT id FROM academic_years WHERE is_active = 1 LIMIT 1');
     return (int)$stmt->fetchColumn();
-  }
-
-  private function guard(string $permission): bool
-  {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if ($userId <= 0) {
-      (new Response())->redirect('/login');
-      return false;
-    }
-    $rbac = new Rbac();
-    if (!$rbac->can($userId, $permission)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
-      return false;
-    }
-    return true;
   }
 }

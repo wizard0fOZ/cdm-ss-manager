@@ -5,10 +5,9 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
-use App\Core\Rbac\Rbac;
 use App\Core\Audit\Audit;
 
-final class AnnouncementsController
+final class AnnouncementsController extends BaseController
 {
   public function index(Request $request): void
   {
@@ -286,35 +285,47 @@ final class AnnouncementsController
     (new Response())->redirect('/announcements');
   }
 
-  private function isStaffAdmin(int $userId): bool
+  public function toggle(Request $request): void
   {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
+    if (!$this->guard('bulletins.manage')) return;
+    $id = (int)$request->param('id');
+    $action = trim((string)($_POST['action'] ?? ''));
+    $value = (int)($_POST['value'] ?? 0);
+
+    if ($id <= 0 || !in_array($action, ['status','pin'], true)) {
+      (new Response())->status(400)->html('Invalid request');
+      return;
     }
+
     $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
-  private function parseDateTime(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $value)) {
-      return str_replace('T', ' ', $value) . ':00';
+    $stmt = $pdo->prepare('SELECT * FROM announcements WHERE id = ?');
+    $stmt->execute([$id]);
+    $item = $stmt->fetch();
+    if (!$item) {
+      (new Response())->status(404)->html('Not found');
+      return;
     }
 
-    return null;
-  }
+    if ($action === 'status') {
+      $newStatus = $value === 1 ? 'PUBLISHED' : 'DRAFT';
+      $publishedAt = $newStatus === 'PUBLISHED' ? ($item['published_at'] ?: date('Y-m-d H:i:s')) : null;
+      $pdo->prepare('UPDATE announcements SET status = ?, published_at = ? WHERE id = ?')
+        ->execute([$newStatus, $publishedAt, $id]);
+      Audit::log('announcements.toggle_status', 'announcements', (string)$id, $item, ['status' => $newStatus]);
+    } else {
+      $newPinned = $value === 1 ? 1 : 0;
+      $pdo->prepare('UPDATE announcements SET is_pinned = ? WHERE id = ?')->execute([$newPinned, $id]);
+      Audit::log('announcements.toggle_pin', 'announcements', (string)$id, $item, ['is_pinned' => $newPinned]);
+    }
 
-  private function formatDateTime(?string $value): ?string
-  {
-    if (!$value) return null;
-    return str_replace(' ', 'T', substr($value, 0, 16));
+    $stmt = $pdo->prepare('SELECT a.*, c.name AS class_name FROM announcements a LEFT JOIN classes c ON c.id = a.class_id WHERE a.id = ?');
+    $stmt->execute([$id]);
+    $updated = $stmt->fetch();
+
+    (new Response())->view('announcements/_row.php', [
+      'item' => $updated,
+      'isAdmin' => true,
+    ]);
   }
 
   private function getTeacherClasses(\PDO $pdo, int $userId): array
@@ -323,20 +334,5 @@ final class AnnouncementsController
     $stmt = $pdo->prepare('SELECT c.id, c.name FROM class_teacher_assignments cta JOIN classes c ON c.id = cta.class_id WHERE cta.user_id = ? AND (cta.end_date IS NULL OR cta.end_date >= CURDATE()) ORDER BY c.name ASC');
     $stmt->execute([$userId]);
     return $stmt->fetchAll();
-  }
-
-  private function guard(string $permission): bool
-  {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if ($userId <= 0) {
-      (new Response())->redirect('/login');
-      return false;
-    }
-    $rbac = new Rbac();
-    if (!$rbac->can($userId, $permission)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
-      return false;
-    }
-    return true;
   }
 }

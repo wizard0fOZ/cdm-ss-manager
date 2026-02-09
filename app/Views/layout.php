@@ -73,6 +73,8 @@
   <?php require __DIR__ . '/partials/modal.php'; ?>
 
   <script src="/assets/choices.min.js"></script>
+  <script defer src="/assets/alpine.min.js"></script>
+  <script src="/assets/htmx.min.js"></script>
   <?= $pageScripts ?? '' ?>
   <script src="/assets/app.js"></script>
 </body>

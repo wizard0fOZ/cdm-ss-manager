@@ -6,6 +6,7 @@ use App\Controllers\CalendarController;
 /** @var \App\Core\Http\Router $router */
 
 $router->get('/calendar', [CalendarController::class, 'index'])->middleware('auth');
+$router->get('/calendar/day', [CalendarController::class, 'day'])->middleware('auth');
 $router->get('/calendar/export', [CalendarController::class, 'export'])->middleware('auth');
 $router->get('/calendar/ical', [CalendarController::class, 'exportIcal'])->middleware('auth');
 $router->get('/calendar/create', [CalendarController::class, 'create'])->middleware('auth', 'perm:calendar.manage');

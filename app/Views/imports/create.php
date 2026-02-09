@@ -98,9 +98,9 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <button class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold" type="submit" formaction="/imports/preview">Preview & Map</button>
-      <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit">Run Import</button>
-      <a href="/imports" class="text-sm text-slate-600">Cancel</a>
+      <button class="btn btn-secondary" type="submit" formaction="/imports/preview">Preview & Map</button>
+      <button class="btn btn-primary" type="submit">Run Import</button>
+      <a href="/imports" class="btn btn-ghost btn-sm">Cancel</a>
     </div>
   </form>
 

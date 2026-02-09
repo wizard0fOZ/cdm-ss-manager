@@ -9,8 +9,8 @@
   <div class="grid gap-6">
     <div>
       <div class="text-sm font-semibold text-slate-900 mb-2">Recent Import Jobs</div>
-      <div class="overflow-hidden rounded-2xl border border-slate-200">
-        <table class="w-full text-left text-sm">
+      <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="cdm-table w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th class="px-4 py-3">Type</th>
@@ -36,7 +36,7 @@
                   <td class="px-4 py-3 text-slate-600"><?= (int)($job['success_rows'] ?? 0) ?> / <?= (int)($job['failed_rows'] ?? 0) ?></td>
                   <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($job['created_at']) ?></td>
                   <td class="px-4 py-3">
-                    <a href="/imports/<?= (int)$job['id'] ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">View</a>
+                    <a href="/imports/<?= (int)$job['id'] ?>" class="btn btn-secondary btn-xs">View</a>
                   </td>
                 </tr>
               <?php endforeach; ?>
@@ -66,12 +66,12 @@
             <span class="text-xs text-slate-500">To</span>
             <input type="date" name="end" value="<?= htmlspecialchars($auditEnd ?? '') ?>" class="rounded-lg border border-slate-200 px-2 py-1 text-xs">
           </label>
-          <button class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Filter</button>
-          <a href="/admin/monitoring" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Reset</a>
+          <button class="btn btn-secondary btn-xs">Filter</button>
+          <a href="/admin/monitoring" class="btn btn-secondary btn-xs">Reset</a>
         </form>
       </div>
-      <div class="overflow-hidden rounded-2xl border border-slate-200">
-        <table class="w-full text-left text-sm">
+      <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="cdm-table w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th class="px-4 py-3">Action</th>
@@ -97,7 +97,7 @@
                   <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars((string)($audit['actor_user_id'] ?? '')) ?></td>
                   <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($audit['created_at'] ?? '') ?></td>
                   <td class="px-4 py-3">
-                    <a href="/admin/audits/<?= (int)$audit['id'] ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Details</a>
+                    <a href="/admin/audits/<?= (int)$audit['id'] ?>" class="btn btn-secondary btn-xs">Details</a>
                   </td>
                 </tr>
               <?php endforeach; ?>

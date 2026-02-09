@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Forgot Password</title>
+  <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body class="bg-slate-50">
   <div class="min-h-screen flex items-center justify-center p-6">
@@ -38,7 +39,7 @@
           <input name="email" type="email" class="mt-1 w-full rounded-lg border border-slate-300 p-2" required>
         </div>
 
-        <button class="w-full rounded-lg bg-slate-900 text-white py-2">
+        <button class="btn btn-primary w-full">
           Generate reset link
         </button>
       </form>

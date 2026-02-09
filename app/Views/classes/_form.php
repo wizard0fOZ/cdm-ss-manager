@@ -119,7 +119,7 @@
         <div class="text-sm font-semibold text-slate-900">Teacher Assignments</div>
         <div class="text-xs text-slate-500">Add one or more teachers and mark main vs assistant.</div>
       </div>
-      <button type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs" data-add-teacher>Add teacher</button>
+    <button type="button" class="btn btn-secondary btn-xs" data-add-teacher>Add teacher</button>
     </div>
     <div class="mt-4 grid gap-3" data-teacher-list>
       <?php
@@ -147,7 +147,7 @@
             </select>
           </div>
           <div class="flex items-end">
-            <button type="button" class="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600" data-remove-teacher aria-label="Remove teacher">
+            <button type="button" class="btn btn-danger btn-icon btn-sm" data-remove-teacher aria-label="Remove teacher">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18"></path>
                 <path d="M8 6V4h8v2"></path>
@@ -163,10 +163,10 @@
   </div>
 
   <div class="flex items-center gap-3">
-    <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit">
+    <button class="btn btn-primary" type="submit">
       <?= htmlspecialchars($submitLabel) ?>
     </button>
-    <a href="/classes" class="text-sm text-slate-600">Cancel</a>
+    <a href="/classes" class="btn btn-ghost btn-sm">Cancel</a>
   </div>
 </form>
 
@@ -189,7 +189,7 @@
       </select>
     </div>
     <div class="flex items-end">
-      <button type="button" class="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600" data-remove-teacher aria-label="Remove teacher">
+      <button type="button" class="btn btn-danger btn-icon btn-sm" data-remove-teacher aria-label="Remove teacher">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 6h18"></path>
           <path d="M8 6V4h8v2"></path>

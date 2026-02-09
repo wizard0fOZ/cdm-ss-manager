@@ -68,7 +68,7 @@
   <?php endif; ?>
 
   <div class="flex items-center gap-3">
-    <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit"><?= htmlspecialchars($submitLabel) ?></button>
-    <a href="/admin/users" class="text-sm text-slate-600">Cancel</a>
+    <button class="btn btn-primary" type="submit"><?= htmlspecialchars($submitLabel) ?></button>
+    <a href="/admin/users" class="btn btn-ghost btn-sm">Cancel</a>
   </div>
 </form>

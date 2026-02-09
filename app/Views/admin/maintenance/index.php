@@ -43,7 +43,7 @@
         </select>
       </div>
     </div>
-    <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Run Cleanup</button>
+    <button class="btn btn-primary">Run Cleanup</button>
   </form>
 <?php
   $content = ob_get_clean();

@@ -21,6 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($title) ?></title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body class="bg-slate-50">
   <div class="min-h-screen flex items-center justify-center p-6">
@@ -28,12 +29,12 @@
       <div class="text-xl font-semibold text-slate-900"><?= htmlspecialchars($title) ?></div>
       <p class="mt-3 text-sm text-slate-600"><?= htmlspecialchars($message) ?></p>
       <div class="mt-5 flex gap-2">
-        <a href="/" class="rounded-lg border border-slate-200 px-4 py-2 text-sm">Go Home</a>
-        <a href="/login" class="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white">Login</a>
+        <a href="/" class="btn btn-secondary">Go Home</a>
+        <a href="/login" class="btn btn-primary">Login</a>
       </div>
 
       <?php if ($details && $isSysAdmin): ?>
-        <button class="mt-4 text-xs text-slate-500 underline" type="button" data-toggle-details>Show technical details</button>
+        <button class="btn btn-ghost btn-xs mt-4" type="button" data-toggle-details>Show technical details</button>
         <pre class="mt-2 hidden whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600" data-details><?= htmlspecialchars($details) ?></pre>
       <?php endif; ?>
     </div>

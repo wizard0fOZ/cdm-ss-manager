@@ -5,7 +5,7 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 
-final class AcademicYearsController
+final class AcademicYearsController extends BaseController
 {
   public function index(): void
   {
@@ -148,29 +148,4 @@ final class AcademicYearsController
     (new Response())->redirect('/academic-years');
   }
 
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-      return $value;
-    }
-
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-
-    return null;
-  }
-
-  private function formatDate(?string $value): ?string
-  {
-    if (!$value) return null;
-    $parts = explode('-', $value);
-    if (count($parts) === 3) {
-      return $parts[2] . '/' . $parts[1] . '/' . $parts[0];
-    }
-    return $value;
-  }
 }

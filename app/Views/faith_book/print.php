@@ -9,6 +9,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Faith Book - <?= htmlspecialchars($student['full_name'] ?? '') ?></title>
+  <link rel="stylesheet" href="/assets/app.css">
   <style>
     body { font-family: Arial, sans-serif; color: #111827; margin: 32px; }
     h1 { font-size: 22px; margin: 0 0 6px; }
@@ -24,7 +25,7 @@
 </head>
 <body>
   <div class="no-print" style="margin-bottom:16px;">
-    <button onclick="window.print()">Print</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print</button>
   </div>
 
   <h1>Faith Book</h1>

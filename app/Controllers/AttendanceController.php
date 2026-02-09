@@ -5,15 +5,14 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
-use App\Core\Rbac\Rbac;
 use App\Core\Audit\Audit;
 
-final class AttendanceController
+final class AttendanceController extends BaseController
 {
   public function index(Request $request): void
   {
     if (!$this->guard('attendance.view')) return;
-    $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
     $sessionId = (int)($request->input('session_id', 0));
     $program = trim((string)$request->input('program', ''));
     $classId = (int)($request->input('class_id', 0));
@@ -98,7 +97,7 @@ final class AttendanceController
   public function take(Request $request): void
   {
     if (!$this->guard('attendance.view')) return;
-    $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
     $classId = (int)$request->param('id');
     $userId = (int)($_SESSION['user_id'] ?? 0);
     $isAdmin = $this->isStaffAdmin($userId);
@@ -129,7 +128,7 @@ final class AttendanceController
   public function save(Request $request): void
   {
     if (!$this->guard('attendance.mark')) return;
-    $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
     $classId = (int)$request->param('id');
     $userId = (int)($_SESSION['user_id'] ?? 0);
     $isAdmin = $this->isStaffAdmin($userId);
@@ -248,11 +247,81 @@ final class AttendanceController
     (new Response())->redirect('/attendance/' . $classId . '?date=' . $date);
   }
 
+  public function mark(Request $request): void
+  {
+    if (!$this->guard('attendance.mark')) return;
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
+    $classId = (int)$request->param('id');
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    $isAdmin = $this->isStaffAdmin($userId);
+
+    $pdo = Db::pdo();
+    if (!$isAdmin && !$this->canAccessClass($pdo, $userId, $classId, $date)) {
+      (new Response())->status(403)->html('Forbidden');
+      return;
+    }
+
+    $classSession = $this->ensureClassSession($pdo, $classId, $date, $userId);
+    $isLocked = $this->isLocked($classSession, $date);
+    if ($isLocked && !$isAdmin) {
+      (new Response())->status(423)->html('Locked');
+      return;
+    }
+
+    $studentId = (int)($_POST['student_id'] ?? 0);
+    $statuses = $_POST['status'] ?? [];
+    $reasons = $_POST['reason'] ?? [];
+    $notes = $_POST['note'] ?? [];
+
+    $status = strtoupper(trim($statuses[$studentId] ?? ''));
+    $reason = strtoupper(trim($reasons[$studentId] ?? ''));
+    $note = trim($notes[$studentId] ?? '');
+
+    $requiredReason = ['ABSENT','LATE','EXCUSED'];
+    if ($status !== '' && in_array($status, $requiredReason, true) && $reason === '') {
+      (new Response())->status(422)->html('<span id="attendance-save-' . $studentId . '" class="text-xs text-rose-600">Reason required</span>');
+      return;
+    }
+
+    if ($status === '') {
+      $pdo->prepare('DELETE FROM attendance_records WHERE class_session_id = ? AND student_id = ?')
+        ->execute([$classSession['id'], $studentId]);
+    } else {
+      $allowed = ['PRESENT','ABSENT','LATE','EXCUSED'];
+      if (!in_array($status, $allowed, true)) {
+        (new Response())->status(422)->html('<span id="attendance-save-' . $studentId . '" class="text-xs text-rose-600">Invalid status</span>');
+        return;
+      }
+
+      $allowedReasons = ['SICK','FAMILY','TRAVEL','OTHER'];
+      if (!in_array($reason, $allowedReasons, true)) {
+        $reason = null;
+      }
+
+      $stmt = $pdo->prepare(
+        'INSERT INTO attendance_records (class_session_id, student_id, status, absence_reason, absence_note, note, marked_by)
+         VALUES (?,?,?,?,?,?,?)
+         ON DUPLICATE KEY UPDATE status=VALUES(status), absence_reason=VALUES(absence_reason), absence_note=VALUES(absence_note), note=VALUES(note), marked_by=VALUES(marked_by), marked_at=NOW()'
+      );
+      $stmt->execute([
+        $classSession['id'],
+        $studentId,
+        $status,
+        $reason,
+        $note ?: null,
+        $note ?: null,
+        $userId,
+      ]);
+    }
+
+    (new Response())->html('<span id="attendance-save-' . $studentId . '" class="text-xs text-emerald-600">Saved</span>');
+  }
+
   public function lock(Request $request): void
   {
     if (!$this->guard('attendance.lock')) return;
     $classId = (int)$request->param('id');
-    $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
     $userId = (int)($_SESSION['user_id'] ?? 0);
 
     $pdo = Db::pdo();
@@ -269,7 +338,7 @@ final class AttendanceController
   {
     if (!$this->guard('attendance.lock')) return;
     $classId = (int)$request->param('id');
-    $date = $this->normalizeDate($request->input('date', date('Y-m-d')));
+    $date = $this->normalizeDateOrToday((string)$request->input('date', ''));
     $userId = (int)($_SESSION['user_id'] ?? 0);
 
     $pdo = Db::pdo();
@@ -307,19 +376,6 @@ final class AttendanceController
     return (bool)$stmt->fetchColumn();
   }
 
-  private function isStaffAdmin(int $userId): bool
-  {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
-    }
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
   private function isLocked(array $classSession, string $date): bool
   {
     if (($classSession['status'] ?? '') === 'LOCKED') return true;
@@ -338,18 +394,6 @@ final class AttendanceController
     }
 
     return false;
-  }
-
-  private function normalizeDate(string $value): string
-  {
-    $value = trim($value);
-    if ($value === '') return date('Y-m-d');
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return $value;
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-    return date('Y-m-d');
   }
 
   private function renderTake(\PDO $pdo, array $class, array $classSession, string $date, bool $isLocked, bool $isAdmin, ?array $records = null, array $errors = [], array $summary = [], array $teachers = []): void
@@ -420,18 +464,4 @@ final class AttendanceController
     return $map;
   }
 
-  private function guard(string $permission): bool
-  {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if ($userId <= 0) {
-      (new Response())->redirect('/login');
-      return false;
-    }
-    $rbac = new Rbac();
-    if (!$rbac->can($userId, $permission)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
-      return false;
-    }
-    return true;
-  }
 }

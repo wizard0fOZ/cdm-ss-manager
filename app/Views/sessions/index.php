@@ -5,12 +5,15 @@
   ob_start();
 ?>
   <div class="flex items-center justify-between">
-    <div class="text-sm text-slate-600">Sessions represent Sunday time blocks.</div>
-    <a href="/sessions/create" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Add Session</a>
+    <div class="section-label">Sessions represent Sunday time blocks.</div>
+    <a href="/sessions/create" class="btn btn-primary btn-sm">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Session
+    </a>
   </div>
 
-  <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-    <table class="w-full text-left text-sm">
+  <div class="mt-4 table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+    <table class="cdm-table w-full text-left text-sm">
       <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
         <tr>
           <th class="px-4 py-3">Name</th>
@@ -22,12 +25,16 @@
       </thead>
       <tbody>
         <?php if (empty($sessions)): ?>
-          <tr>
-            <td colspan="5" class="px-4 py-6">
-              <?php $message = 'No sessions found. Add the Sunday time blocks first.'; ?>
+        <tr>
+          <td colspan="5" class="px-4 py-6">
+              <?php
+                $message = 'No sessions found. Add the Sunday time blocks first.';
+                $actionLabel = 'Add Session';
+                $actionHref = '/sessions/create';
+              ?>
               <?php require __DIR__ . '/../partials/empty.php'; ?>
-            </td>
-          </tr>
+          </td>
+        </tr>
         <?php else: ?>
           <?php foreach ($sessions as $session): ?>
             <tr class="border-t border-slate-200">
@@ -36,7 +43,7 @@
               <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($session['end_time']) ?></td>
               <td class="px-4 py-3 text-slate-600"><?= (int)$session['sort_order'] ?></td>
               <td class="px-4 py-3">
-                <a href="/sessions/<?= (int)$session['id'] ?>/edit" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Edit</a>
+                <a href="/sessions/<?= (int)$session['id'] ?>/edit" class="btn btn-secondary btn-xs">Edit</a>
               </td>
             </tr>
           <?php endforeach; ?>

@@ -16,8 +16,8 @@
       <?php endif; ?>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Row</th>

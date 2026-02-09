@@ -36,10 +36,10 @@
 ?>
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-end justify-between gap-3">
-      <form method="get" class="grid gap-3 md:grid-cols-7">
+      <form method="get" class="filter-bar grid flex-1 gap-3 md:grid-cols-4">
         <div>
-          <label class="text-xs text-slate-500">Year</label>
-          <select name="year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Year</label>
+          <select name="year_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($years as $year): ?>
               <option value="<?= (int)$year['id'] ?>" <?= (string)$yearFilter === (string)$year['id'] ? 'selected' : '' ?>><?= htmlspecialchars($year['label']) ?></option>
@@ -47,8 +47,8 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Class</label>
-          <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Class</label>
+          <select name="class_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($classes as $class): ?>
               <option value="<?= (int)$class['id'] ?>" <?= (string)$classFilter === (string)$class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['name']) ?></option>
@@ -56,8 +56,8 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Term</label>
-          <select name="term_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Term</label>
+          <select name="term_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($terms as $term): ?>
               <option value="<?= (int)$term['id'] ?>" <?= (string)$termFilter === (string)$term['id'] ? 'selected' : '' ?>><?= htmlspecialchars($term['label']) ?></option>
@@ -65,8 +65,8 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Category</label>
-          <select name="category" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Category</label>
+          <select name="category" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($categories as $cat): ?>
               <option value="<?= $cat ?>" <?= $category === $cat ? 'selected' : '' ?>><?= $cat ?></option>
@@ -74,41 +74,50 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Scope</label>
-          <select name="scope" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Scope</label>
+          <select name="scope" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <option value="GLOBAL" <?= $scope === 'GLOBAL' ? 'selected' : '' ?>>Global</option>
             <option value="CLASS" <?= $scope === 'CLASS' ? 'selected' : '' ?>>Class</option>
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Search</label>
-          <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Title or description" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          <label class="section-label">Search</label>
+          <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Title or description" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
         </div>
         <div>
-          <label class="text-xs text-slate-500">Upcoming</label>
-          <select name="range_days" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Upcoming</label>
+          <select name="range_days" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="14" <?= (int)$rangeDays === 14 ? 'selected' : '' ?>>Next 2 weeks</option>
             <option value="30" <?= (int)$rangeDays === 30 ? 'selected' : '' ?>>Next 30 days</option>
           </select>
         </div>
-        <div class="flex items-end gap-3 md:col-span-7">
+        <div class="flex items-end gap-3 md:col-span-4">
           <?php if (!$isAdmin): ?>
-            <label class="inline-flex items-center gap-2 text-xs text-slate-600">
-              <input type="checkbox" name="my_classes" value="1" <?= $myClassesOnly ? 'checked' : '' ?>>
+            <label class="inline-flex items-center gap-2 text-xs text-slate-500">
+              <input type="checkbox" name="my_classes" value="1" <?= $myClassesOnly ? 'checked' : '' ?> class="rounded border-slate-300">
               My classes only
             </label>
           <?php endif; ?>
-          <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Filter</button>
-          <a href="/calendar" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Reset</a>
+          <button class="btn btn-primary btn-sm">Filter</button>
+          <a href="/calendar" class="btn btn-secondary btn-sm">Reset</a>
         </div>
       </form>
 
       <div class="flex items-center gap-2">
-        <a href="/calendar/export?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm">Export CSV</a>
-        <a href="/calendar/ical?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm">Export iCal</a>
+        <a href="/calendar/export?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="btn btn-secondary btn-sm">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </a>
+        <a href="/calendar/ical?<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>" class="btn btn-secondary btn-sm">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          iCal
+        </a>
         <?php if (!empty($isAdmin)): ?>
-          <a href="/calendar/create" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">New Event</a>
+          <a href="/calendar/create" class="btn btn-primary btn-sm">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Event
+          </a>
         <?php endif; ?>
       </div>
     </div>
@@ -118,8 +127,8 @@
         <div class="flex items-center justify-between">
           <div class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($monthLabel) ?></div>
           <div class="flex items-center gap-2">
-            <a class="rounded-lg border border-slate-200 px-3 py-1 text-xs" href="/calendar?<?= htmlspecialchars($prevQuery) ?>">Prev</a>
-            <a class="rounded-lg border border-slate-200 px-3 py-1 text-xs" href="/calendar?<?= htmlspecialchars($nextQuery) ?>">Next</a>
+            <a class="btn btn-secondary btn-xs" href="/calendar?<?= htmlspecialchars($prevQuery) ?>">Prev</a>
+            <a class="btn btn-secondary btn-xs" href="/calendar?<?= htmlspecialchars($nextQuery) ?>">Next</a>
           </div>
         </div>
 
@@ -139,7 +148,11 @@
               $eventsForDay = $calendarMap[$key] ?? [];
               $extraCount = max(0, count($eventsForDay) - 2);
           ?>
-            <div class="min-h-[90px] cursor-pointer bg-white px-2 py-2 <?= $isCurrent ? '' : 'opacity-60' ?>" data-calendar-day="<?= htmlspecialchars($key) ?>">
+            <div class="min-h-[90px] cursor-pointer bg-white px-2 py-2 <?= $isCurrent ? '' : 'opacity-60' ?>"
+                 data-calendar-day="<?= htmlspecialchars($key) ?>"
+                 hx-get="/calendar/day?date=<?= htmlspecialchars($key) ?>&<?= htmlspecialchars(http_build_query(array_filter($queryBase))) ?>"
+                 hx-target="[data-calendar-drawer-body]"
+                 hx-swap="innerHTML">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold <?= $isToday ? 'text-emerald-600' : 'text-slate-700' ?>"><?= $cursor->format('j') ?></span>
                 <?php if ($isToday): ?>
@@ -171,7 +184,7 @@
             <div class="text-xs text-slate-500">Next highlights for your filters.</div>
           </div>
           <?php if (!empty($isAdmin)): ?>
-            <a href="/calendar/create" class="text-xs text-slate-500 underline">Add event</a>
+            <a href="/calendar/create" class="btn btn-ghost btn-xs">Add event</a>
           <?php endif; ?>
         </div>
         <div class="mt-4 space-y-3">
@@ -186,9 +199,12 @@
                 $scopeLabel = $event['scope'] === 'CLASS' ? ('Class • ' . ($event['class_name'] ?? 'Unknown')) : 'Global';
                 $teacherRows = $classTeachers[(int)($event['class_id'] ?? 0)] ?? [];
               ?>
-              <div class="rounded-xl border border-slate-200 px-3 py-3">
+              <div class="card-hover rounded-xl border border-slate-200 px-3 py-3">
                 <div class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($event['title']) ?></div>
-                <div class="text-xs text-slate-500"><?= htmlspecialchars($scopeLabel) ?> • <?= htmlspecialchars($event['category']) ?></div>
+                <div class="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                  <span><?= htmlspecialchars($scopeLabel) ?></span>
+                  <span class="badge badge-neutral"><?= htmlspecialchars($event['category']) ?></span>
+                </div>
                 <?php if (!empty($teacherRows)): ?>
                   <div class="mt-1 text-xs text-slate-500">
                     <?php
@@ -221,8 +237,8 @@
       </div>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Event</th>
@@ -236,7 +252,13 @@
           <?php if (empty($events)): ?>
             <tr>
               <td colspan="5" class="px-4 py-6">
-                <?php $message = 'No calendar events found.'; ?>
+                <?php
+                  $message = 'No calendar events found.';
+                  if (!empty($isAdmin)) {
+                    $actionLabel = 'New Event';
+                    $actionHref = '/calendar/create';
+                  }
+                ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
             </tr>
@@ -278,10 +300,10 @@
                     </div>
                   <?php endif; ?>
                 </td>
-                <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($event['category']) ?></td>
+                <td class="px-4 py-3"><span class="badge badge-neutral"><?= htmlspecialchars($event['category']) ?></span></td>
                 <td class="px-4 py-3">
                   <?php if (!empty($isAdmin)): ?>
-                    <a href="/calendar/<?= (int)$event['id'] ?>/edit" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Edit</a>
+                    <a href="/calendar/<?= (int)$event['id'] ?>/edit" class="btn btn-secondary btn-xs">Edit</a>
                   <?php else: ?>
                     <span class="text-xs text-slate-400">View only</span>
                   <?php endif; ?>
@@ -298,42 +320,12 @@
   <div class="fixed right-0 top-0 z-50 h-full w-full max-w-md translate-x-full bg-white shadow-2xl transition-transform" data-calendar-drawer>
     <div class="flex items-center justify-between border-b border-slate-200 px-4 py-4">
       <div class="text-sm font-semibold text-slate-900" data-calendar-drawer-title></div>
-      <button type="button" class="text-sm text-slate-500" data-calendar-drawer-close>Close</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-calendar-drawer-close>Close</button>
     </div>
     <div class="flex flex-col gap-3 px-4 py-4" data-calendar-drawer-body></div>
   </div>
-
-  <?php
-    $calendarDays = [];
-    foreach ($calendarMap as $date => $events) {
-      foreach ($events as $event) {
-        $teacherRows = $classTeachers[(int)($event['class_id'] ?? 0)] ?? [];
-        $teacherLabels = '';
-        if ($teacherRows) {
-          $labels = [];
-          foreach ($teacherRows as $row) {
-            $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
-            $labels[] = $row['full_name'] . ' (' . $role . ')';
-          }
-          $teacherLabels = implode(', ', $labels);
-        }
-        $calendarDays[$date][] = [
-          'title' => $event['title'],
-          'category' => $event['category'],
-          'scope' => $event['scope'],
-          'class_name' => $event['class_name'] ?? '',
-          'teachers' => $teacherLabels,
-          'all_day' => (int)$event['all_day'] === 1,
-          'start_time' => substr($event['start_datetime'], 11, 5),
-          'end_time' => substr($event['end_datetime'], 11, 5),
-        ];
-      }
-    }
-    $calendarJson = json_encode($calendarDays, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-  ?>
   <script>
     window.CDM_CALENDAR_DRAWER = true;
-    window.CDM_CALENDAR_DAYS = <?= $calendarJson ?>;
   </script>
 <?php
   $content = ob_get_clean();

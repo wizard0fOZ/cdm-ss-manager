@@ -27,18 +27,18 @@
   ob_start();
 ?>
   <div class="flex flex-col gap-4">
-    <form method="get" class="grid gap-3 md:grid-cols-6">
+    <form method="get" class="filter-bar grid gap-3 md:grid-cols-4">
       <div>
-        <label class="text-xs text-slate-500">Report Type</label>
-        <select name="type" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Report Type</label>
+        <select name="type" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <?php foreach ($types as $key => $label): ?>
             <option value="<?= $key ?>" <?= $type === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Academic Year</label>
-        <select name="year_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Academic Year</label>
+        <select name="year_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($years as $year): ?>
             <option value="<?= (int)$year['id'] ?>" <?= (int)$yearId === (int)$year['id'] ? 'selected' : '' ?>><?= htmlspecialchars($year['label']) ?></option>
@@ -46,8 +46,8 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Term</label>
-        <select name="term_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Term</label>
+        <select name="term_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($terms as $term): ?>
             <option value="<?= (int)$term['id'] ?>" <?= (int)$termId === (int)$term['id'] ? 'selected' : '' ?>><?= htmlspecialchars($term['label']) ?></option>
@@ -55,8 +55,8 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Class</label>
-        <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Class</label>
+        <select name="class_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($classes as $class): ?>
             <option value="<?= (int)$class['id'] ?>" <?= (int)$classId === (int)$class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['name']) ?></option>
@@ -64,8 +64,8 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Student</label>
-        <select name="student_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+        <label class="section-label">Student</label>
+        <select name="student_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
           <option value="">All</option>
           <?php foreach ($students as $student): ?>
             <option value="<?= (int)$student['id'] ?>" <?= (int)$studentId === (int)$student['id'] ? 'selected' : '' ?>><?= htmlspecialchars($student['full_name']) ?></option>
@@ -73,8 +73,8 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">Attendance Status</label>
-        <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+        <label class="section-label">Attendance Status</label>
+        <select name="status" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
           <option value="">All</option>
           <?php foreach (['PRESENT','ABSENT','LATE','EXCUSED','UNMARKED'] as $s): ?>
             <option value="<?= $s ?>" <?= $status === $s ? 'selected' : '' ?>><?= $s ?></option>
@@ -82,22 +82,31 @@
         </select>
       </div>
       <div>
-        <label class="text-xs text-slate-500">From</label>
-        <input type="date" name="from" value="<?= htmlspecialchars($from) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+        <label class="section-label">From</label>
+        <input type="date" name="from" value="<?= htmlspecialchars($from) ?>" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
       </div>
       <div>
-        <label class="text-xs text-slate-500">To</label>
-        <input type="date" name="to" value="<?= htmlspecialchars($to) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+        <label class="section-label">To</label>
+        <input type="date" name="to" value="<?= htmlspecialchars($to) ?>" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
       </div>
-      <div class="flex items-end gap-2 md:col-span-6">
-        <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Run</button>
-        <a href="/reports" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Reset</a>
-        <a href="/reports/pdf?<?= htmlspecialchars($query) ?>" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Download PDF</a>
-        <a href="/reports/csv?<?= htmlspecialchars($query) ?>" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Download CSV</a>
+      <div class="flex items-end gap-2 md:col-span-4">
+        <button class="btn btn-primary btn-sm">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Run
+        </button>
+        <a href="/reports" class="btn btn-secondary btn-sm">Reset</a>
+        <a href="/reports/pdf?<?= htmlspecialchars($query) ?>" class="btn btn-secondary btn-sm">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF
+        </a>
+        <a href="/reports/csv?<?= htmlspecialchars($query) ?>" class="btn btn-secondary btn-sm">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </a>
       </div>
     </form>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-4">
       <div class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($report['title'] ?? 'Report') ?></div>
       <?php if (!empty($report['subtitle'])): ?>
         <div class="text-xs text-slate-500 mt-1"><?= htmlspecialchars($report['subtitle']) ?></div>
@@ -107,8 +116,8 @@
       <?php endif; ?>
       <div class="mt-2 text-xs text-slate-500">Rows: <?= count($report['rows'] ?? []) ?></div>
 
-      <div class="mt-3 overflow-x-auto">
-        <table class="w-full text-left text-sm">
+      <div class="mt-3 table-wrap overflow-x-auto">
+        <table class="cdm-table w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <?php foreach ($report['headers'] ?? [] as $h): ?>

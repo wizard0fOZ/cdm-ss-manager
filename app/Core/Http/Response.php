@@ -32,7 +32,7 @@ class Response
 
     public function view(string $view, array $data = []): void
     {
-        extract($data);
+        extract($data, EXTR_SKIP);
         require __DIR__ . '/../../views/' . $view;
         exit;
     }

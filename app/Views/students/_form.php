@@ -46,17 +46,43 @@
   </div>
 <?php endif; ?>
 
-<form method="post" action="<?= htmlspecialchars($action) ?>" class="space-y-8">
+<div class="mb-4 hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" data-unsaved-banner>
+  You have unsaved changes.
+</div>
+
+<form method="post" action="<?= htmlspecialchars($action) ?>" class="space-y-8" x-data="{ tab: 'basics' }" data-unsaved>
   <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
 
-  <section class="grid gap-4 md:grid-cols-2">
+  <div class="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1.5 text-sm">
+    <?php
+      $tabs = [
+        'basics' => 'Basics',
+        'guardians' => 'Guardians',
+        'sacraments' => 'Sacraments',
+        'documents' => 'Documents',
+        'notes' => 'Notes',
+      ];
+    ?>
+    <?php foreach ($tabs as $key => $label): ?>
+      <button type="button"
+              class="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+              :class="tab === '<?= $key ?>' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+              @click="tab = '<?= $key ?>'">
+        <?= htmlspecialchars($label) ?>
+      </button>
+    <?php endforeach; ?>
+  </div>
+
+  <section class="grid gap-4 md:grid-cols-2" x-show="tab === 'basics'" x-cloak>
     <div>
       <label class="text-sm text-slate-600">First Name</label>
-      <input name="first_name" value="<?= htmlspecialchars($firstName) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <input name="first_name" value="<?= htmlspecialchars($firstName) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required data-validate="required" data-field="first_name">
+      <div class="mt-1 text-xs text-rose-600" data-error-for="first_name"></div>
     </div>
     <div>
       <label class="text-sm text-slate-600">Last Name</label>
-      <input name="last_name" value="<?= htmlspecialchars($lastName) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
+      <input name="last_name" value="<?= htmlspecialchars($lastName) ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required data-validate="required" data-field="last_name">
+      <div class="mt-1 text-xs text-rose-600" data-error-for="last_name"></div>
     </div>
     <div>
       <label class="text-sm text-slate-600">Date of Birth</label>
@@ -100,7 +126,7 @@
     </div>
   </section>
 
-  <section>
+  <section x-show="tab === 'guardians'" x-cloak>
     <div class="text-sm font-semibold text-slate-900">Father's Information</div>
     <div class="mt-3 grid gap-4 md:grid-cols-3" data-guardian-row>
       <?php
@@ -113,7 +139,8 @@
       </div>
       <div>
         <label class="text-sm text-slate-600">Father's Email</label>
-        <input name="guardians[0][email]" value="<?= htmlspecialchars($father['email'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+        <input name="guardians[0][email]" value="<?= htmlspecialchars($father['email'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-validate="email" data-field="guardian_0_email">
+        <div class="mt-1 text-xs text-rose-600" data-error-for="guardian_0_email"></div>
       </div>
       <div>
         <label class="text-sm text-slate-600">Father's Phone</label>
@@ -123,7 +150,7 @@
     </div>
   </section>
 
-  <section>
+  <section x-show="tab === 'guardians'" x-cloak>
     <div class="text-sm font-semibold text-slate-900">Mother's Information</div>
     <div class="mt-3 grid gap-4 md:grid-cols-3" data-guardian-row>
       <?php
@@ -136,7 +163,8 @@
       </div>
       <div>
         <label class="text-sm text-slate-600">Mother's Email</label>
-        <input name="guardians[1][email]" value="<?= htmlspecialchars($mother['email'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+        <input name="guardians[1][email]" value="<?= htmlspecialchars($mother['email'] ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" data-validate="email" data-field="guardian_1_email">
+        <div class="mt-1 text-xs text-rose-600" data-error-for="guardian_1_email"></div>
       </div>
       <div>
         <label class="text-sm text-slate-600">Mother's Phone</label>
@@ -145,10 +173,10 @@
     </div>
   </section>
 
-  <section>
+  <section x-show="tab === 'guardians'" x-cloak>
     <div class="flex items-center justify-between">
       <div class="text-sm font-semibold text-slate-900">Additional Guardians</div>
-      <button type="button" class="rounded-lg border border-slate-200 px-3 py-1 text-xs" data-add-guardian>Add guardian</button>
+      <button type="button" class="btn btn-secondary btn-xs" data-add-guardian>Add guardian</button>
     </div>
 
     <div class="mt-3 space-y-3" id="guardian-list">
@@ -166,14 +194,15 @@
           </div>
           <div>
             <label class="text-xs text-slate-500">Email</label>
-            <input name="guardians[<?= $index ?>][email]" value="<?= htmlspecialchars($guardian['email'] ?? '') ?>" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
+            <input name="guardians[<?= $index ?>][email]" value="<?= htmlspecialchars($guardian['email'] ?? '') ?>" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" data-validate="email" data-field="guardian_<?= $index ?>_email">
+            <div class="mt-1 text-xs text-rose-600" data-error-for="guardian_<?= $index ?>_email"></div>
           </div>
           <div>
             <label class="text-xs text-slate-500">Phone</label>
             <input name="guardians[<?= $index ?>][phone]" value="<?= htmlspecialchars($guardian['phone'] ?? '') ?>" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
           </div>
           <div class="flex items-end justify-end">
-            <button type="button" class="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50" data-remove-guardian aria-label="Remove guardian">
+            <button type="button" class="btn btn-danger btn-icon btn-sm mt-1" data-remove-guardian aria-label="Remove guardian">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18"/>
                 <path d="M8 6V4h8v2"/>
@@ -188,7 +217,7 @@
     </div>
   </section>
 
-  <section class="space-y-4">
+  <section class="space-y-4" x-show="tab === 'sacraments'" x-cloak>
     <div>
       <div class="text-sm font-semibold text-slate-900">Church & Sacrament Information</div>
       <p class="text-xs text-slate-500 mt-1">Leave blank if not applicable (e.g., RCIC or younger students).</p>
@@ -252,7 +281,7 @@
     </div>
   </section>
 
-  <section class="space-y-3">
+  <section class="space-y-3" x-show="tab === 'documents'" x-cloak>
     <div class="text-sm font-semibold text-slate-900">Required Documents</div>
     <div class="grid gap-4 md:grid-cols-2">
       <div>
@@ -274,7 +303,7 @@
     </div>
   </section>
 
-  <section class="grid gap-4 md:grid-cols-2">
+  <section class="grid gap-4 md:grid-cols-2" x-show="tab === 'notes'" x-cloak>
     <div>
       <label class="text-sm text-slate-600">Remarks</label>
       <textarea name="notes" rows="3" placeholder="Any special remarks..." class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"><?= htmlspecialchars($notes) ?></textarea>
@@ -286,10 +315,10 @@
   </section>
 
   <div class="flex items-center gap-3">
-    <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit">
+    <button class="btn btn-primary" type="submit">
       <?= htmlspecialchars($submitLabel) ?>
     </button>
-    <a href="/students" class="text-sm text-slate-600">Cancel</a>
+    <a href="/students" class="btn btn-ghost btn-sm">Cancel</a>
   </div>
 </form>
 
@@ -305,14 +334,15 @@
     </div>
     <div>
       <label class="text-xs text-slate-500">Email</label>
-      <input data-name="email" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
+      <input data-name="email" data-validate="email" data-field="" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
+      <div class="mt-1 text-xs text-rose-600" data-error-for=""></div>
     </div>
     <div>
       <label class="text-xs text-slate-500">Phone</label>
       <input data-name="phone" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
     </div>
     <div class="flex items-end justify-end">
-      <button type="button" class="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50" data-remove-guardian aria-label="Remove guardian">
+      <button type="button" class="btn btn-danger btn-icon btn-sm mt-1" data-remove-guardian aria-label="Remove guardian">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 6h18"/>
           <path d="M8 6V4h8v2"/>
@@ -344,6 +374,11 @@
       node.querySelectorAll('input[data-name]').forEach((input) => {
         const key = input.getAttribute('data-name');
         input.name = `guardians[${index}][${key}]`;
+      });
+      node.querySelectorAll('[data-validate][data-name="email"]').forEach((input) => {
+        input.dataset.field = `guardian_${index}_email`;
+        const err = input.closest('div')?.querySelector('[data-error-for]');
+        if (err) err.dataset.errorFor = `guardian_${index}_email`;
       });
       const removeBtn = node.querySelector('[data-remove-guardian]');
       if (removeBtn) {

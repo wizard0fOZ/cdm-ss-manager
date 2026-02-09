@@ -6,7 +6,7 @@ use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
 
-final class CalendarController
+final class CalendarController extends BaseController
 {
   private array $categories = ['HOLIDAY','NO_CLASS','CAMP','TRAINING','SPECIAL_EVENT','OTHER'];
 
@@ -333,6 +333,95 @@ final class CalendarController
     }
     fclose($out);
     exit;
+  }
+
+  public function day(Request $request): void
+  {
+    $userId = (int)($_SESSION['user_id'] ?? 0);
+    $isAdmin = $this->isStaffAdmin($userId);
+    $pdo = Db::pdo();
+
+    $dateParam = trim((string)$request->input('date', ''));
+    if ($dateParam === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateParam)) {
+      (new Response())->status(400)->html('Invalid date.');
+      return;
+    }
+
+    $yearFilter = (int)($request->input('year_id', 0));
+    $classFilter = (int)($request->input('class_id', 0));
+    $termFilter = (int)($request->input('term_id', 0));
+    $category = trim((string)$request->input('category', ''));
+    $scope = trim((string)$request->input('scope', ''));
+    $q = trim((string)$request->input('q', ''));
+    $myClassesOnly = (int)($request->input('my_classes', 0)) === 1;
+
+    $classes = $isAdmin ? $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll() : $this->getTeacherClasses($pdo, $userId);
+    if (!$isAdmin && $classFilter > 0) {
+      $allowedIds = array_map('intval', array_column($classes, 'id'));
+      if (!in_array($classFilter, $allowedIds, true)) {
+        $classFilter = 0;
+      }
+    }
+
+    $filters = [];
+    $params = [];
+    if ($yearFilter > 0) { $filters[] = 'e.academic_year_id = ?'; $params[] = $yearFilter; }
+    if ($classFilter > 0) { $filters[] = 'e.class_id = ?'; $params[] = $classFilter; }
+    if ($category !== '') { $filters[] = 'e.category = ?'; $params[] = $category; }
+    if ($scope !== '') { $filters[] = 'e.scope = ?'; $params[] = $scope; }
+    if ($q !== '') { $filters[] = '(e.title LIKE ? OR e.description LIKE ?)'; $params[] = "%$q%"; $params[] = "%$q%"; }
+
+    if ($termFilter > 0) {
+      $stmt = $pdo->prepare('SELECT start_date, end_date FROM terms WHERE id = ? LIMIT 1');
+      $stmt->execute([$termFilter]);
+      $term = $stmt->fetch();
+      if ($term) {
+        $filters[] = '(e.start_datetime <= ? AND e.end_datetime >= ?)';
+        $params[] = $term['end_date'] . ' 23:59:59';
+        $params[] = $term['start_date'] . ' 00:00:00';
+      }
+    }
+
+    if (!$isAdmin) {
+      $teacherClassIds = array_map('intval', array_column($classes, 'id'));
+      if ($teacherClassIds) {
+        $placeholders = implode(',', array_fill(0, count($teacherClassIds), '?'));
+        if ($myClassesOnly) {
+          $filters[] = "(e.scope = 'CLASS' AND e.class_id IN ($placeholders))";
+          $params = array_merge($params, $teacherClassIds);
+        } else {
+          $filters[] = "(e.scope = 'GLOBAL' OR (e.scope = 'CLASS' AND e.class_id IN ($placeholders)))";
+          $params = array_merge($params, $teacherClassIds);
+        }
+      } else {
+        $filters[] = "e.scope = 'GLOBAL'";
+      }
+    }
+
+    $filters[] = '(e.start_datetime <= ? AND e.end_datetime >= ?)';
+    $params[] = $dateParam . ' 23:59:59';
+    $params[] = $dateParam . ' 00:00:00';
+
+    $sql = 'SELECT e.*, c.name AS class_name FROM calendar_events e LEFT JOIN classes c ON c.id = e.class_id';
+    if ($filters) {
+      $sql .= ' WHERE ' . implode(' AND ', $filters);
+    }
+    $sql .= ' ORDER BY e.start_datetime ASC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $events = $stmt->fetchAll();
+
+    $classIds = [];
+    foreach ($events as $event) {
+      if (!empty($event['class_id'])) $classIds[] = (int)$event['class_id'];
+    }
+    $classTeachers = $this->getClassTeachers($pdo, array_values(array_unique($classIds)));
+
+    (new Response())->view('calendar/_day_drawer.php', [
+      'date' => $dateParam,
+      'events' => $events,
+      'classTeachers' => $classTeachers,
+    ]);
   }
 
   public function exportIcal(Request $request): void
@@ -670,19 +759,6 @@ final class CalendarController
     (new Response())->redirect('/calendar');
   }
 
-  private function isStaffAdmin(int $userId): bool
-  {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
-    }
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
   private function getClassTeachers(\PDO $pdo, array $classIds): array
   {
     $ids = array_filter(array_map('intval', $classIds));
@@ -701,25 +777,11 @@ final class CalendarController
     return $map;
   }
 
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return $value;
-    return null;
-  }
-
   private function combineDateTime(?string $date, string $time): ?string
   {
     if (!$date) return null;
     if (!preg_match('/^\d{2}:\d{2}$/', $time)) return null;
     return $date . ' ' . $time . ':00';
-  }
-
-  private function formatDate(?string $value): ?string
-  {
-    if (!$value) return null;
-    return substr($value, 0, 10);
   }
 
   private function formatTime(?string $value): ?string

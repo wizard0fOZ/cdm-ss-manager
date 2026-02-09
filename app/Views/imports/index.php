@@ -6,12 +6,15 @@
 ?>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <div class="text-sm text-slate-600">Recent import jobs</div>
-      <a href="/imports/create" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">New Import</a>
+      <div class="section-label">Recent import jobs</div>
+      <a href="/imports/create" class="btn btn-primary btn-sm">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        New Import
+      </a>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Type</th>
@@ -25,7 +28,11 @@
           <?php if (empty($jobs)): ?>
             <tr>
               <td colspan="5" class="px-4 py-6">
-                <?php $message = 'No import jobs yet.'; ?>
+                <?php
+                  $message = 'No import jobs yet.';
+                  $actionLabel = 'New Import';
+                  $actionHref = '/imports/create';
+                ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
             </tr>
@@ -33,11 +40,25 @@
             <?php foreach ($jobs as $job): ?>
               <tr class="border-t border-slate-200">
                 <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($job['job_type']) ?></td>
-                <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($job['status']) ?></td>
-                <td class="px-4 py-3 text-slate-600"><?= (int)($job['success_rows'] ?? 0) ?> success / <?= (int)($job['failed_rows'] ?? 0) ?> failed</td>
+                <td class="px-4 py-3">
+                  <?php
+                    $importBadge = match($job['status'] ?? '') {
+                      'COMPLETED' => 'badge-success',
+                      'FAILED' => 'badge-danger',
+                      'PROCESSING' => 'badge-info',
+                      'PENDING' => 'badge-warning',
+                      default => 'badge-neutral',
+                    };
+                  ?>
+                  <span class="badge <?= $importBadge ?>"><?= htmlspecialchars($job['status']) ?></span>
+                </td>
+                <td class="px-4 py-3 text-slate-600">
+                  <span class="text-emerald-600"><?= (int)($job['success_rows'] ?? 0) ?></span> /
+                  <span class="<?= (int)($job['failed_rows'] ?? 0) > 0 ? 'text-red-500' : 'text-slate-400' ?>"><?= (int)($job['failed_rows'] ?? 0) ?> failed</span>
+                </td>
                 <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($job['created_at']) ?></td>
                 <td class="px-4 py-3">
-                  <a href="/imports/<?= (int)$job['id'] ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">View</a>
+                  <a href="/imports/<?= (int)$job['id'] ?>" class="btn btn-secondary btn-xs">View</a>
                 </td>
               </tr>
             <?php endforeach; ?>

@@ -6,7 +6,7 @@ use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
 
-final class TrainingController
+final class TrainingController extends BaseController
 {
   private array $types = ['PSO','FORMATION','OTHER'];
 
@@ -225,39 +225,4 @@ final class TrainingController
     (new Response())->redirect('/training');
   }
 
-  private function isStaffAdmin(int $userId): bool
-  {
-    if ($userId <= 0) return false;
-    $override = $_SESSION['_role_override_code'] ?? null;
-    if ($override) {
-      return in_array($override, ['STAFF_ADMIN','SYSADMIN'], true);
-    }
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?, ?) LIMIT 1');
-    $stmt->execute([$userId, 'STAFF_ADMIN', 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
-  }
-
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return $value;
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-
-    return null;
-  }
-
-  private function formatDate(?string $value): ?string
-  {
-    if (!$value) return null;
-    $parts = explode('-', $value);
-    if (count($parts) === 3) {
-      return $parts[2] . '/' . $parts[1] . '/' . $parts[0];
-    }
-    return $value;
-  }
 }

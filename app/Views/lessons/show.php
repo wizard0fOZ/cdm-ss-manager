@@ -11,10 +11,10 @@
         <div class="text-lg font-semibold text-slate-900"><?= htmlspecialchars($lesson['session_date'] ?? '') ?></div>
       </div>
       <div class="flex items-center gap-2">
-        <a href="/lessons/<?= (int)$lesson['id'] ?>/copy" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Copy</a>
-        <a href="/lessons/<?= (int)$lesson['id'] ?>/print" class="rounded-xl border border-slate-200 px-4 py-2 text-sm" target="_blank" rel="noreferrer">Print</a>
-        <a href="/lessons/<?= (int)$lesson['id'] ?>/edit" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Edit</a>
-        <a href="/lessons" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Back</a>
+        <a href="/lessons/<?= (int)$lesson['id'] ?>/copy" class="btn btn-secondary">Copy</a>
+        <a href="/lessons/<?= (int)$lesson['id'] ?>/print" class="btn btn-secondary" target="_blank" rel="noreferrer">Print</a>
+        <a href="/lessons/<?= (int)$lesson['id'] ?>/edit" class="btn btn-secondary">Edit</a>
+        <a href="/lessons" class="btn btn-secondary">Back</a>
       </div>
     </div>
 

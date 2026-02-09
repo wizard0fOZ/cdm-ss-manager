@@ -4,80 +4,27 @@ namespace App\Controllers;
 use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
-use App\Core\Rbac\Rbac;
 use App\Core\Audit\Audit;
 
-final class StudentsController
+final class StudentsController extends BaseController
 {
   public function index(): void
   {
     if (!$this->guard('students.view')) return;
-    $pdo = Db::pdo();
-
     $search = trim($_GET['q'] ?? '');
     $status = trim($_GET['status'] ?? '');
     $classId = trim($_GET['class_id'] ?? '');
+    $page = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 50;
 
-    $where = [];
-    $params = [];
-
-    if ($search !== '') {
-      $where[] = '(s.full_name LIKE :q OR s.identity_number LIKE :q)';
-      $params[':q'] = '%' . $search . '%';
-    }
-
-    if ($status !== '') {
-      $where[] = 's.status = :status';
-      $params[':status'] = $status;
-    }
-
-    if ($classId !== '') {
-      $where[] = 'ce.class_id = :class_id';
-      $params[':class_id'] = $classId;
-    }
-
-    $sql = "SELECT s.*, c.name AS class_name, ce.class_id AS class_id
-            FROM students s
-            LEFT JOIN student_class_enrollments ce
-              ON ce.student_id = s.id AND ce.end_date IS NULL
-            LEFT JOIN classes c ON c.id = ce.class_id";
-
-    if ($where) {
-      $sql .= ' WHERE ' . implode(' AND ', $where);
-    }
-
-    $sql .= ' ORDER BY s.created_at DESC LIMIT 200';
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $students = $stmt->fetchAll();
-    foreach ($students as &$student) {
-      if (!empty($student['dob'])) {
-        $student['dob_display'] = $this->formatDate($student['dob']);
-        $student['age_display'] = $this->calcAge($student['dob']);
-      }
-      $admission = $student['admission_type'] ?? 'NEW';
-      $missing = [];
-      if ($admission === 'TRANSFER') {
-        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
-        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
-        if (empty($student['doc_transfer_letter_url'])) $missing[] = 'Transfer';
-      } else {
-        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
-        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
-      }
-      $student['docs_missing'] = $missing;
-    }
-    unset($student);
-
+    $pdo = Db::pdo();
+    [$students, $classTeachers, $pagination] = $this->loadStudents($pdo, $search, $status, $classId, $page, $perPage);
     $classRows = $pdo->query('SELECT id, name FROM classes ORDER BY name ASC')->fetchAll();
-    $classIds = [];
-    foreach ($students as $student) {
-      if (!empty($student['class_id'])) {
-        $classIds[] = (int)$student['class_id'];
-      }
-    }
-    $classTeachers = $this->getClassTeachers($pdo, array_values(array_unique($classIds)));
+    $query = $this->buildQuery([
+      'q' => $search,
+      'status' => $status,
+      'class_id' => $classId,
+    ]);
 
     (new Response())->view('students/index.php', [
       'students' => $students,
@@ -86,6 +33,54 @@ final class StudentsController
       'classId' => $classId,
       'classes' => $classRows,
       'classTeachers' => $classTeachers,
+      'pagination' => $pagination,
+      'query' => $query,
+    ]);
+  }
+
+  public function partial(): void
+  {
+    if (!$this->guard('students.view')) return;
+    $search = trim($_GET['q'] ?? '');
+    $status = trim($_GET['status'] ?? '');
+    $classId = trim($_GET['class_id'] ?? '');
+    $page = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 50;
+
+    $pdo = Db::pdo();
+    [$students, $classTeachers, $pagination] = $this->loadStudents($pdo, $search, $status, $classId, $page, $perPage);
+    $query = $this->buildQuery([
+      'q' => $search,
+      'status' => $status,
+      'class_id' => $classId,
+    ]);
+
+    (new Response())->view('students/_table.php', [
+      'students' => $students,
+      'classTeachers' => $classTeachers,
+      'pagination' => $pagination,
+      'query' => $query,
+    ]);
+  }
+
+  public function updateStatus(Request $request): void
+  {
+    if (!$this->guard('students.edit')) return;
+    $id = (int)$request->param('id');
+    $status = strtoupper(trim($_POST['status'] ?? ''));
+    $allowed = ['ACTIVE','INACTIVE','GRADUATED','TRANSFERRED'];
+    if ($id <= 0 || !in_array($status, $allowed, true)) {
+      (new Response())->status(422)->html('Invalid status');
+      return;
+    }
+
+    $pdo = Db::pdo();
+    $stmt = $pdo->prepare('UPDATE students SET status = ? WHERE id = ?');
+    $stmt->execute([$status, $id]);
+    Audit::log('students.status_update', 'students', (string)$id, null, ['status' => $status]);
+
+    (new Response())->view('students/_status_cell.php', [
+      'student' => ['id' => $id, 'status' => $status],
     ]);
   }
 
@@ -434,32 +429,6 @@ final class StudentsController
     ]));
   }
 
-  private function parseDate(string $value): ?string
-  {
-    $value = trim($value);
-    if ($value === '') return null;
-
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-      return $value;
-    }
-
-    if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
-      return $m[3] . '-' . $m[2] . '-' . $m[1];
-    }
-
-    return null;
-  }
-
-  private function formatDate(?string $value): ?string
-  {
-    if (!$value) return null;
-    $parts = explode('-', $value);
-    if (count($parts) === 3) {
-      return $parts[2] . '/' . $parts[1] . '/' . $parts[0];
-    }
-    return $value;
-  }
-
   private function upsertSacraments(\PDO $pdo, int $studentId, array $payload): void
   {
     $church = trim($payload['church_of_baptism'] ?? '');
@@ -580,6 +549,107 @@ final class StudentsController
     return $map;
   }
 
+  private function loadStudents(\PDO $pdo, string $search, string $status, string $classId, int $page, int $perPage): array
+  {
+    $where = [];
+    $params = [];
+
+    if ($search !== '') {
+      $where[] = '(s.full_name LIKE :q OR s.identity_number LIKE :q)';
+      $params[':q'] = '%' . $search . '%';
+    }
+
+    if ($status !== '') {
+      $where[] = 's.status = :status';
+      $params[':status'] = $status;
+    }
+
+    if ($classId !== '') {
+      $where[] = 'ce.class_id = :class_id';
+      $params[':class_id'] = $classId;
+    }
+
+    $countSql = "SELECT COUNT(*) AS total
+            FROM students s
+            LEFT JOIN student_class_enrollments ce
+              ON ce.student_id = s.id AND ce.end_date IS NULL
+            LEFT JOIN classes c ON c.id = ce.class_id";
+
+    if ($where) {
+      $countSql .= ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($params);
+    $total = (int)$countStmt->fetchColumn();
+    $totalPages = max(1, (int)ceil($total / $perPage));
+    $page = min($page, $totalPages);
+    $offset = ($page - 1) * $perPage;
+
+    $sql = "SELECT s.*, c.name AS class_name, ce.class_id AS class_id
+            FROM students s
+            LEFT JOIN student_class_enrollments ce
+              ON ce.student_id = s.id AND ce.end_date IS NULL
+            LEFT JOIN classes c ON c.id = ce.class_id";
+
+    if ($where) {
+      $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $sql .= ' ORDER BY s.created_at DESC LIMIT ' . $perPage . ' OFFSET ' . $offset;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $students = $stmt->fetchAll();
+    foreach ($students as &$student) {
+      if (!empty($student['dob'])) {
+        $student['dob_display'] = $this->formatDate($student['dob']);
+        $student['age_display'] = $this->calcAge($student['dob']);
+      }
+      $admission = $student['admission_type'] ?? 'NEW';
+      $missing = [];
+      if ($admission === 'TRANSFER') {
+        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
+        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
+        if (empty($student['doc_transfer_letter_url'])) $missing[] = 'Transfer';
+      } else {
+        if (empty($student['doc_birth_cert_url'])) $missing[] = 'Birth';
+        if (empty($student['doc_baptism_cert_url'])) $missing[] = 'Baptism';
+      }
+      $student['docs_missing'] = $missing;
+    }
+    unset($student);
+
+    $classIds = [];
+    foreach ($students as $student) {
+      if (!empty($student['class_id'])) {
+        $classIds[] = (int)$student['class_id'];
+      }
+    }
+    $classTeachers = $this->getClassTeachers($pdo, array_values(array_unique($classIds)));
+
+    $pagination = [
+      'page' => $page,
+      'perPage' => $perPage,
+      'total' => $total,
+      'totalPages' => $totalPages,
+      'hasPrev' => $page > 1,
+      'hasNext' => $page < $totalPages,
+    ];
+
+    return [$students, $classTeachers, $pagination];
+  }
+
+  private function buildQuery(array $params): string
+  {
+    $filtered = [];
+    foreach ($params as $key => $value) {
+      if ($value === '' || $value === null) continue;
+      $filtered[$key] = $value;
+    }
+    return http_build_query($filtered);
+  }
+
   private function calcAge(?string $dob): ?int
   {
     if (!$dob) return null;
@@ -592,18 +662,4 @@ final class StudentsController
     }
   }
 
-  private function guard(string $permission): bool
-  {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if ($userId <= 0) {
-      (new Response())->redirect('/login');
-      return false;
-    }
-    $rbac = new Rbac();
-    if (!$rbac->can($userId, $permission)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
-      return false;
-    }
-    return true;
-  }
 }

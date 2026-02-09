@@ -38,7 +38,7 @@
           <input type="password" name="override_password" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Confirm password">
         </div>
         <div class="flex items-end">
-          <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Update</button>
+          <button class="btn btn-primary">Update</button>
         </div>
       </form>
     </div>
@@ -63,13 +63,13 @@
           <input name="setting_value" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="e.g. 23:59">
         </div>
         <div class="flex items-end">
-          <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Save</button>
+          <button class="btn btn-primary">Save</button>
         </div>
       </form>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Key</th>

@@ -7,7 +7,7 @@
   $calendarStart = $calendarStart ?? new DateTime('first day of this month');
   $calendarEnd = $calendarEnd ?? new DateTime('last day of this month');
   $monthStart = $monthStart ?? new DateTime('first day of this month');
-  $contactEmail = $contactEmail ?? 'coordinator@divinemercy.my';
+  $contactEmail = $contactEmail ?? 'catechetical@divinmercy.my';
   $mailto = 'mailto:' . $contactEmail;
   $whatsapp = $whatsapp ?? '';
   $waNumber = preg_replace('/\D+/', '', $whatsapp);
@@ -26,6 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/app.css">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -65,9 +66,9 @@
         <p class="mt-1 text-sm text-slate-600">Public Sunday School events and key dates.</p>
       </div>
       <div class="flex items-center gap-2">
-        <a href="/public/calendar?month=<?= htmlspecialchars($monthPrev) ?>" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">Prev</a>
+        <a href="/public/calendar?month=<?= htmlspecialchars($monthPrev) ?>" class="btn btn-secondary btn-sm">Prev</a>
         <div class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold"><?= htmlspecialchars($monthLabel) ?></div>
-        <a href="/public/calendar?month=<?= htmlspecialchars($monthNext) ?>" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">Next</a>
+        <a href="/public/calendar?month=<?= htmlspecialchars($monthNext) ?>" class="btn btn-secondary btn-sm">Next</a>
       </div>
     </div>
 
@@ -150,9 +151,9 @@
     </div>
 
     <div class="mt-8 flex flex-wrap items-center gap-3">
-      <a href="<?= htmlspecialchars($mailto) ?>" class="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100">Email</a>
+      <a href="<?= htmlspecialchars($mailto) ?>" class="btn btn-secondary">Email</a>
       <?php if ($waLink !== ''): ?>
-        <a href="<?= htmlspecialchars($waLink) ?>" class="rounded-lg border border-slate-200 px-4 py-2 text-sm hover:bg-slate-100">WhatsApp</a>
+        <a href="<?= htmlspecialchars($waLink) ?>" class="btn btn-secondary">WhatsApp</a>
       <?php endif; ?>
     </div>
   </main>
@@ -165,7 +166,7 @@
           <div class="text-xs uppercase tracking-wide text-slate-500">Events</div>
           <div id="drawer-date" class="text-lg font-semibold">Selected day</div>
         </div>
-        <button type="button" class="rounded-lg border border-slate-200 px-3 py-2 text-sm" data-drawer-close>Close</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-drawer-close>Close</button>
       </div>
       <div id="drawer-body" class="p-5 space-y-3 text-sm text-slate-700"></div>
     </div>

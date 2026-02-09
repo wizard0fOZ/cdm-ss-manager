@@ -5,17 +5,17 @@
   ob_start();
 ?>
   <div class="flex flex-col gap-4">
-    <form method="get" class="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <form method="get" class="filter-bar flex flex-wrap items-end gap-3">
       <div>
-        <label class="text-xs text-slate-500">Search</label>
-        <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Student name" class="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <label class="section-label">Search</label>
+        <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Student name" class="mt-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm">
       </div>
-      <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Search</button>
-      <a href="/faith-book" class="rounded-lg border border-slate-200 px-4 py-2 text-sm">Reset</a>
+      <button class="btn btn-primary btn-sm">Search</button>
+      <a href="/faith-book" class="btn btn-secondary btn-sm">Reset</a>
     </form>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Student</th>
@@ -51,10 +51,19 @@
                   ?>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"><?= htmlspecialchars($student['status'] ?? '') ?></span>
+                  <?php
+                    $fbBadge = match($student['status'] ?? '') {
+                      'ACTIVE' => 'badge-success',
+                      'INACTIVE' => 'badge-neutral',
+                      'GRADUATED' => 'badge-info',
+                      'TRANSFERRED' => 'badge-warning',
+                      default => 'badge-neutral',
+                    };
+                  ?>
+                  <span class="badge <?= $fbBadge ?>"><?= htmlspecialchars($student['status'] ?? '') ?></span>
                 </td>
                 <td class="px-4 py-3">
-                  <a href="/faith-book/<?= (int)$student['id'] ?>" class="rounded-lg border border-slate-200 px-3 py-1 text-xs">Open</a>
+                  <a href="/faith-book/<?= (int)$student['id'] ?>" class="btn btn-secondary btn-xs">Open</a>
                 </td>
               </tr>
             <?php endforeach; ?>

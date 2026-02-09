@@ -5,10 +5,10 @@ use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
 use App\Core\Support\Flash;
+use App\Core\Support\Env;
 
-final class AdminController
+final class AdminController extends BaseController
 {
-  private string $defaultPassword = 'CDM2026!';
 
   public function index(): void
   {
@@ -422,7 +422,8 @@ final class AdminController
       return;
     }
 
-    $hash = password_hash($this->defaultPassword, PASSWORD_DEFAULT);
+    $tempPassword = $this->defaultPassword();
+    $hash = password_hash($tempPassword, PASSWORD_DEFAULT);
     $pdo->beginTransaction();
     try {
       $stmt = $pdo->prepare('INSERT INTO users (full_name, email, password_hash, status, must_change_password) VALUES (?,?,?,?,?)');
@@ -436,7 +437,7 @@ final class AdminController
       throw $e;
     }
 
-    Flash::set('success', 'User created. Temp password set to ' . $this->defaultPassword . '.');
+    Flash::set('success', 'User created. Temp password set to ' . $tempPassword . '.');
     (new Response())->redirect('/admin/users');
   }
 
@@ -506,7 +507,7 @@ final class AdminController
     $pdo->beginTransaction();
     try {
       if ($resetPassword) {
-        $hash = password_hash($this->defaultPassword, PASSWORD_DEFAULT);
+        $hash = password_hash($this->defaultPassword(), PASSWORD_DEFAULT);
         $stmt = $pdo->prepare('UPDATE users SET full_name=?, email=?, status=?, must_change_password=?, password_hash=? WHERE id=?');
         $stmt->execute([$fullName, $email, $status, 1, $hash, $id]);
       } else {
@@ -539,13 +540,14 @@ final class AdminController
     }
   }
 
-  private function isSysAdmin(int $userId): bool
+  private function defaultPassword(): string
   {
-    if ($userId <= 0) return false;
-    $pdo = Db::pdo();
-    $stmt = $pdo->prepare('SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code = ? LIMIT 1');
-    $stmt->execute([$userId, 'SYSADMIN']);
-    return (bool)$stmt->fetchColumn();
+    $password = (string)Env::get('ADMIN_DEFAULT_PASSWORD', '');
+    if ($password === '') {
+      $password = (string)Env::get('DEFAULT_USER_PASSWORD', '');
+    }
+    if ($password !== '') return $password;
+    return bin2hex(random_bytes(8));
   }
 
   private function verifyPassword(int $userId, string $password): bool

@@ -16,14 +16,14 @@ final class PublicController
     $pdo = Db::pdo();
     $stmt = $pdo->query("SELECT title, message, start_at, end_at, pin_until, is_pinned, priority FROM announcements WHERE scope = 'GLOBAL' AND status = 'PUBLISHED' AND start_at <= NOW() AND end_at >= NOW() ORDER BY (CASE WHEN is_pinned = 1 AND (pin_until IS NULL OR pin_until >= NOW()) THEN 1 ELSE 0 END) DESC, priority DESC, start_at DESC LIMIT 3");
     $announcements = $stmt->fetchAll();
-    $start = date('Y-m-d H:i:s');
-    $end = (new \DateTime('+14 days'))->format('Y-m-d H:i:s');
+    $rangeStart = (new \DateTime('today'))->setTime(0, 0, 0);
+    $rangeEnd = (new \DateTime('+14 days'))->setTime(23, 59, 59);
     $eventsStmt = $pdo->prepare("SELECT title, start_datetime, end_datetime, all_day, description
       FROM calendar_events
-      WHERE scope = 'GLOBAL' AND start_datetime BETWEEN ? AND ?
+      WHERE scope = 'GLOBAL' AND start_datetime <= ? AND end_datetime >= ?
       ORDER BY start_datetime ASC
       LIMIT 5");
-    $eventsStmt->execute([$start, $end]);
+    $eventsStmt->execute([$rangeEnd->format('Y-m-d H:i:s'), $rangeStart->format('Y-m-d H:i:s')]);
     $events = $eventsStmt->fetchAll();
     (new Response())->view('public/home.php', [
       'contactEmail' => $contactEmail,
@@ -41,14 +41,14 @@ final class PublicController
     $pdo = Db::pdo();
     $stmt = $pdo->query("SELECT title, message, start_at, end_at, pin_until, is_pinned, priority FROM announcements WHERE scope = 'GLOBAL' AND status = 'PUBLISHED' AND start_at <= NOW() AND end_at >= NOW() ORDER BY (CASE WHEN is_pinned = 1 AND (pin_until IS NULL OR pin_until >= NOW()) THEN 1 ELSE 0 END) DESC, priority DESC, start_at DESC");
     $announcements = $stmt->fetchAll();
-    $start = date('Y-m-d H:i:s');
-    $end = (new \DateTime('+30 days'))->format('Y-m-d H:i:s');
+    $rangeStart = (new \DateTime('today'))->setTime(0, 0, 0);
+    $rangeEnd = (new \DateTime('+30 days'))->setTime(23, 59, 59);
     $eventsStmt = $pdo->prepare("SELECT title, start_datetime, end_datetime, all_day, description
       FROM calendar_events
-      WHERE scope = 'GLOBAL' AND start_datetime BETWEEN ? AND ?
+      WHERE scope = 'GLOBAL' AND start_datetime <= ? AND end_datetime >= ?
       ORDER BY start_datetime ASC
       LIMIT 10");
-    $eventsStmt->execute([$start, $end]);
+    $eventsStmt->execute([$rangeEnd->format('Y-m-d H:i:s'), $rangeStart->format('Y-m-d H:i:s')]);
     $events = $eventsStmt->fetchAll();
 
     (new Response())->view('public/announcements.php', [
@@ -82,15 +82,23 @@ final class PublicController
 
     $stmt = $pdo->prepare("SELECT title, start_datetime, end_datetime, all_day, description
       FROM calendar_events
-      WHERE scope = 'GLOBAL' AND start_datetime BETWEEN ? AND ?
+      WHERE scope = 'GLOBAL' AND start_datetime <= ? AND end_datetime >= ?
       ORDER BY start_datetime ASC");
-    $stmt->execute([$calendarStart->format('Y-m-d H:i:s'), $calendarEnd->format('Y-m-d H:i:s')]);
+    $stmt->execute([$calendarEnd->format('Y-m-d H:i:s'), $calendarStart->format('Y-m-d H:i:s')]);
     $events = $stmt->fetchAll();
 
     $eventsByDate = [];
     foreach ($events as $event) {
-      $dateKey = (new \DateTime($event['start_datetime']))->format('Y-m-d');
-      $eventsByDate[$dateKey][] = $event;
+      $start = new \DateTime($event['start_datetime']);
+      $end = new \DateTime($event['end_datetime']);
+      $day = (clone $start)->setTime(0, 0, 0);
+      $endDay = (clone $end)->setTime(0, 0, 0);
+      while ($day <= $endDay) {
+        $dateKey = $day->format('Y-m-d');
+        if (!isset($eventsByDate[$dateKey])) $eventsByDate[$dateKey] = [];
+        $eventsByDate[$dateKey][] = $event;
+        $day->modify('+1 day');
+      }
     }
 
     (new Response())->view('public/calendar.php', [
@@ -109,7 +117,7 @@ final class PublicController
 
   private function publicSettings(): array
   {
-    $email = $_ENV['PUBLIC_CONTACT_EMAIL'] ?? 'coordinator@divinemercy.my';
+    $email = $_ENV['PUBLIC_CONTACT_EMAIL'] ?? 'catechetical@divinmercy.my';
     $whatsapp = $_ENV['PUBLIC_WHATSAPP'] ?? '';
     try {
       $pdo = Db::pdo();

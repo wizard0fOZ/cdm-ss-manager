@@ -2,14 +2,21 @@
   $pageTitle = 'Lesson Plans';
   $pageSubtitle = 'Draft and publish weekly lessons.';
 
+  $lessonBadge = [
+    'DRAFT' => 'badge-neutral',
+    'PUBLISHED' => 'badge-success',
+    'APPROVED' => 'badge-info',
+    'ARCHIVED' => 'badge-warning',
+  ];
+
   ob_start();
 ?>
   <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <form method="get" class="grid gap-3 md:grid-cols-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <form method="get" class="filter-bar grid flex-1 gap-3 md:grid-cols-5">
         <div>
-          <label class="text-xs text-slate-500">Class</label>
-          <select name="class_id" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Class</label>
+          <select name="class_id" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($classes as $class): ?>
               <option value="<?= (int)$class['id'] ?>" <?= (string)$classId === (string)$class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['name']) ?></option>
@@ -17,8 +24,8 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">Status</label>
-          <select name="status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
+          <label class="section-label">Status</label>
+          <select name="status" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" data-enhance="search">
             <option value="">All</option>
             <?php foreach ($statuses as $opt): ?>
               <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>><?= $opt ?></option>
@@ -26,30 +33,31 @@
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500">From</label>
-          <input type="date" name="from" value="<?= htmlspecialchars($from ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          <label class="section-label">From</label>
+          <input type="date" name="from" value="<?= htmlspecialchars($from ?? '') ?>" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
         </div>
         <div>
-          <label class="text-xs text-slate-500">To</label>
-          <input type="date" name="to" value="<?= htmlspecialchars($to ?? '') ?>" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          <label class="section-label">To</label>
+          <input type="date" name="to" value="<?= htmlspecialchars($to ?? '') ?>" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
         </div>
         <div>
-          <label class="text-xs text-slate-500">Search</label>
-          <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Title or content" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          <label class="section-label">Search</label>
+          <input name="q" value="<?= htmlspecialchars($q ?? '') ?>" placeholder="Title or content" class="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
         </div>
         <div class="flex items-end gap-2">
-          <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Filter</button>
-          <a href="/lessons" class="rounded-xl border border-slate-200 px-4 py-2 text-sm">Reset</a>
+          <button class="btn btn-primary btn-sm">Filter</button>
+          <a href="/lessons" class="btn btn-secondary btn-sm">Reset</a>
         </div>
       </form>
 
-      <a href="/lessons/create" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+      <a href="/lessons/create" class="btn btn-primary btn-sm">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Lesson
       </a>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-      <table class="w-full text-left text-sm">
+    <div class="table-wrap overflow-x-auto rounded-2xl border border-slate-200">
+      <table class="cdm-table w-full text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-4 py-3">Date</th>
@@ -63,7 +71,11 @@
           <?php if (empty($lessons)): ?>
             <tr>
               <td colspan="5" class="px-4 py-6">
-                <?php $message = 'No lesson plans found.'; ?>
+                <?php
+                  $message = 'No lesson plans found.';
+                  $actionLabel = 'Add Lesson';
+                  $actionHref = '/lessons/create';
+                ?>
                 <?php require __DIR__ . '/../partials/empty.php'; ?>
               </td>
             </tr>
@@ -81,18 +93,18 @@
                         $role = ($row['assignment_role'] ?? '') === 'MAIN' ? 'Main' : 'Asst';
                         $labels[] = htmlspecialchars($row['full_name']) . ' (' . $role . ')';
                       }
-                      echo '<div class="mt-1 text-xs text-slate-500">' . implode(', ', $labels) . '</div>';
+                      echo '<div class="mt-1 text-xs text-slate-400">' . implode(', ', $labels) . '</div>';
                     }
                   ?>
                 </td>
                 <td class="px-4 py-3 font-semibold text-slate-900"><?= htmlspecialchars($lesson['title']) ?></td>
                 <td class="px-4 py-3">
-                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600"><?= htmlspecialchars($lesson['status']) ?></span>
+                  <span class="badge <?= $lessonBadge[$lesson['status']] ?? 'badge-neutral' ?>"><?= htmlspecialchars($lesson['status']) ?></span>
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex items-center gap-2 text-xs">
-                    <a href="/lessons/<?= (int)$lesson['id'] ?>" class="rounded-lg border border-slate-200 px-3 py-1">View</a>
-                    <a href="/lessons/<?= (int)$lesson['id'] ?>/edit" class="rounded-lg border border-slate-200 px-3 py-1">Edit</a>
+                  <div class="flex items-center gap-1">
+                    <a href="/lessons/<?= (int)$lesson['id'] ?>" class="btn btn-secondary btn-xs">View</a>
+                    <a href="/lessons/<?= (int)$lesson['id'] ?>/edit" class="btn btn-ghost btn-xs">Edit</a>
                   </div>
                 </td>
               </tr>

@@ -4,10 +4,9 @@ namespace App\Controllers;
 use App\Core\Db\Db;
 use App\Core\Http\Response;
 use App\Core\Http\Request;
-use App\Core\Rbac\Rbac;
 use App\Core\Audit\Audit;
 
-final class ClassesController
+final class ClassesController extends BaseController
 {
   private array $programs = ['ENGLISH','KUBM','MANDARIN','TAMIL','RCIC','CONFIRMANDS'];
   private array $streams = ['PAUL','PETER','SINGLE'];
@@ -368,18 +367,4 @@ final class ClassesController
     }
   }
 
-  private function guard(string $permission): bool
-  {
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-    if ($userId <= 0) {
-      (new Response())->redirect('/login');
-      return false;
-    }
-    $rbac = new Rbac();
-    if (!$rbac->can($userId, $permission)) {
-      (new Response())->status(403)->view('errors/403.php', ['code' => $permission]);
-      return false;
-    }
-    return true;
-  }
 }
