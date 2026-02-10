@@ -121,12 +121,16 @@ final class DashboardController extends BaseController
 
   public function health(): void
   {
-    $pdo = Db::pdo();
-    $v = $pdo->query('SELECT VERSION()')->fetchColumn();
+    $dbOk = false;
+    try {
+      Db::pdo()->query('SELECT 1');
+      $dbOk = true;
+    } catch (\Throwable) {
+      // DB unreachable
+    }
 
     (new Response())->json([
-      'ok' => true,
-      'mysql_version' => $v,
+      'ok' => $dbOk,
       'time' => date('c'),
     ]);
   }

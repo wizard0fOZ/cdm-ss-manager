@@ -81,7 +81,6 @@ final class Router
         $this->response->status(404)->view('errors/error.php', [
             'title' => 'Page not found',
             'message' => 'We could not find the page you were looking for.',
-            'details' => 'Route not found: ' . $this->request->path,
         ]);
     }
 
@@ -190,6 +189,23 @@ final class Router
             callable $next
         ) {
             if (session_status() !== PHP_SESSION_ACTIVE) {
+                $isHttps =
+                    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+                    (($_SERVER['SERVER_PORT'] ?? '') === '443') ||
+                    (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
+                $sameSite = (string)(\App\Core\Support\Env::get('SESSION_SAMESITE', 'Lax'));
+                $sameSite = in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+
+                session_set_cookie_params([
+                    'lifetime' => 0,
+                    'path' => '/',
+                    'domain' => '',
+                    'secure' => $isHttps,
+                    'httponly' => true,
+                    'samesite' => $sameSite,
+                ]);
+
                 session_start();
             }
 

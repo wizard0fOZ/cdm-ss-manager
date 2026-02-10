@@ -73,8 +73,8 @@
   <?php require __DIR__ . '/partials/modal.php'; ?>
 
   <script src="/assets/choices.min.js"></script>
-  <script defer src="/assets/alpine.min.js"></script>
-  <script src="/assets/htmx.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.8/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <?= $pageScripts ?? '' ?>
   <script src="/assets/app.js"></script>
 </body>

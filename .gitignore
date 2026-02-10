@@ -1,0 +1,27 @@
+# Environment
+.env
+
+# Dependencies
+/vendor/
+
+# Storage (keep dirs via .gitkeep)
+/storage/logs/*
+/storage/cache/*
+/storage/imports/*
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/imports/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archives & misc
+Archive.zip
+*.zip

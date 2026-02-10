@@ -11,15 +11,14 @@ final class Db
   {
     if (self::$pdo) return self::$pdo;
 
-    $host = $_ENV['DB_HOST'] ?? 'db';
+    $host = $_ENV['DB_HOST'] ?? $_ENV['DB_DATABASE_HOST'] ?? null;
     $port = $_ENV['DB_PORT'] ?? '3306';
-    $name = $_ENV['DB_NAME'] ?? ($_ENV['DB_DATABASE'] ?? 'cdm_ss_manager');
-    $user = $_ENV['DB_USER'] ?? ($_ENV['DB_USERNAME'] ?? 'cdm_user');
-    $pass = $_ENV['DB_PASS'] ?? ($_ENV['DB_PASSWORD'] ?? 'cdm_pass');
+    $name = $_ENV['DB_NAME'] ?? ($_ENV['DB_DATABASE'] ?? null);
+    $user = $_ENV['DB_USER'] ?? ($_ENV['DB_USERNAME'] ?? null);
+    $pass = $_ENV['DB_PASS'] ?? ($_ENV['DB_PASSWORD'] ?? '');
 
-    // Force TCP on local dev when "localhost" would otherwise use a socket.
-    if ($host === 'localhost') {
-      $host = '127.0.0.1';
+    if (!$host || !$name || !$user) {
+      throw new \RuntimeException('Database configuration missing. Set DB_HOST, DB_DATABASE, and DB_USERNAME in .env');
     }
 
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
